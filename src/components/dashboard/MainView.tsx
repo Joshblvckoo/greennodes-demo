@@ -16,6 +16,9 @@ export default function MainView() {
     const savedTrack = localStorage.getItem('sandbox_tenant_focus') || 'whaleTracker';
     setActiveTrack(savedTrack);
     
+    // ⚡ Clear index history to prevent mismatched coordinate frames during transitions
+    setHoveredIndex(null);
+
     // Generate fresh, context-aware telemetry aligned to the active time filter
     const freshMetrics = getLiveTimeframeMetrics(savedTrack, activeTimeframe);
     setDashboardData(freshMetrics);
@@ -118,6 +121,7 @@ export default function MainView() {
                 [{dashboardData.points[hoveredIndex].label}]:
               </span>
               <span className="text-rose-400 font-bold">
+                {/* 🛡️ Optional chaining prevents reading fields of undefined arrays */}
                 ${dashboardData.points[hoveredIndex].amount?.toLocaleString() ?? '0'}
               </span>
             </div>
