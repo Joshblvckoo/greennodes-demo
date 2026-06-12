@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -67,7 +66,7 @@ export default function AuditRequest() {
     const fullName = formData.get("fullName") as string;
     const domain = email.split('@')[1] || "Global Sandbox Alpha";
 
-    // Terminal Simulation Steps
+    // Simulation Steps
     const steps = [
       `[INIT] Handshaking securely with regional data nodes via Firebase network edge...`,
       `[AUTH] Mapping structural environment profiles for enterprise target: ${domain}`,
@@ -119,7 +118,7 @@ export default function AuditRequest() {
           Request Free 48-Hour <span className="text-primary glow-primary">Cloud Waste Audit</span>
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Get a comprehensive analysis of your cloud footprint and a personalized ServiceNow automation roadmap for {companyName || "your organization"}.
+          Run our configuration crawler against active subnets to identify zombie hardware allocations for {companyName || "your organization"}.
         </p>
       </div>
 
@@ -127,7 +126,7 @@ export default function AuditRequest() {
         <div className="grid grid-cols-1 md:grid-cols-5 h-full">
           <div className="md:col-span-2 bg-primary/5 p-8 border-r border-white/5 flex flex-col justify-between">
             <div className="space-y-6">
-              <h3 className="text-xl font-bold">What you get:</h3>
+              <h3 className="text-xl font-bold">Audit Deliverables:</h3>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3 text-sm">
                   <div className="mt-1 p-1 bg-primary/20 rounded">
@@ -170,7 +169,7 @@ export default function AuditRequest() {
                 <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-primary">
                   <span className="flex items-center gap-2">
                     <TerminalIcon size={14} />
-                    Processing Environment...
+                    Executing Deep Environment Audit...
                   </span>
                   <span>{Math.round(progress)}%</span>
                 </div>
@@ -203,7 +202,7 @@ export default function AuditRequest() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="corporateEmail">Corporate Email</Label>
+                    <Label htmlFor="corporateEmail">Corporate Email Address</Label>
                     <Input 
                       id="corporateEmail" 
                       name="corporateEmail" 
@@ -219,31 +218,29 @@ export default function AuditRequest() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="spend">Monthly Cloud Spend</Label>
+                    <Label htmlFor="spend">Estimated Monthly Overhead</Label>
                     <Select name="spend" required>
                       <SelectTrigger className="bg-background/50 border-white/5">
                         <SelectValue placeholder="Select range" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Less than $1k">Less than $1k</SelectItem>
-                        <SelectItem value="$1k-$10k">$1k-$10k</SelectItem>
-                        <SelectItem value="$10k-$50k">$10k-$50k</SelectItem>
-                        <SelectItem value="$50k-$100k">$50k-$100k</SelectItem>
-                        <SelectItem value="More than $100k">More than $100k</SelectItem>
+                        <SelectItem value="under-10k">Under $10,000 / mo</SelectItem>
+                        <SelectItem value="10k-50k">$10,000 - $50,000 / mo</SelectItem>
+                        <SelectItem value="over-50k">Over $50,000 / mo</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="provider">Primary Provider</Label>
+                    <Label htmlFor="provider">Primary Cloud Infrastructure</Label>
                     <Select name="provider" required>
                       <SelectTrigger className="bg-background/50 border-white/5">
-                        <SelectValue placeholder="Select cloud" />
+                        <SelectValue placeholder="Select infrastructure" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="AWS">AWS</SelectItem>
-                        <SelectItem value="GCP">GCP</SelectItem>
-                        <SelectItem value="Azure">Azure</SelectItem>
-                        <SelectItem value="Multi-Cloud">Multi-Cloud</SelectItem>
+                        <SelectItem value="AWS">Amazon Web Services (AWS)</SelectItem>
+                        <SelectItem value="GCP">Google Cloud Platform (GCP)</SelectItem>
+                        <SelectItem value="Azure">Microsoft Azure</SelectItem>
+                        <SelectItem value="Multi">Multi-Cloud / Hybrid Architecture</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -255,7 +252,7 @@ export default function AuditRequest() {
                   className="w-full h-12 bg-primary text-primary-foreground font-black uppercase tracking-widest glow-primary hover:bg-primary/90 transition-all"
                 >
                   <Send className="mr-2 h-4 w-4" />
-                  Claim Free Audit
+                  Execute Deep Environment Audit
                 </Button>
                 <p className="text-[10px] text-center text-muted-foreground uppercase tracking-tighter">
                   🔒 Privacy Note: Used only to calculate your sandboxed environment data variables.
@@ -286,7 +283,7 @@ export default function AuditRequest() {
           </div>
           <DialogFooter className="p-6 pt-0 border-t border-white/5">
             <Button onClick={() => setShowModal(false)} className="w-full bg-primary text-primary-foreground font-bold">
-              Got it, thanks!
+              ✓ Environment Log Completed!
             </Button>
           </DialogFooter>
         </DialogContent>

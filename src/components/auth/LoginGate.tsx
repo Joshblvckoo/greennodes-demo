@@ -35,14 +35,14 @@ export default function LoginGate() {
           <h1 className="text-4xl font-black tracking-tighter uppercase">
             GreenNodes <span className="text-primary">Core</span>
           </h1>
-          <p className="text-muted-foreground font-medium">Enterprise FinOps & GreenOps Control</p>
+          <p className="text-muted-foreground font-medium uppercase tracking-widest text-xs">Enterprise GreenOps Environment Entry</p>
         </div>
 
         <Card className="glass-card border-white/10 shadow-2xl">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">GreenNodes Core Login</CardTitle>
+            <CardTitle className="text-2xl font-bold">Session Login</CardTitle>
             <CardDescription>
-              Enter your enterprise credentials to access your sandboxed environment.
+              Enter your corporate credentials to establish an authenticated session handshake.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -64,30 +64,15 @@ export default function LoginGate() {
                       required
                     />
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="token" className="text-xs uppercase tracking-widest font-bold opacity-70">
-                    Access Token / Password
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input 
-                      id="token"
-                      type="password"
-                      placeholder="••••••••"
-                      className="bg-background/50 border-white/10 pl-10 h-12"
-                    />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground italic">
-                    Leave blank for Public Demo Sandbox Mode
+                  <p className="text-[10px] text-muted-foreground mt-2 block italic">
+                    🔒 Sandbox Access: Your input builds localized instance variables. No spam.
                   </p>
                 </div>
               </div>
 
               <div className="space-y-3 pt-2">
                 <Button type="submit" className="w-full h-12 bg-primary text-primary-foreground font-black uppercase tracking-widest glow-primary hover:bg-primary/90">
-                  Authenticate Instance
+                  Establish Session Handshake
                 </Button>
                 
                 <div className="relative flex items-center py-2">
@@ -106,10 +91,6 @@ export default function LoginGate() {
                   Access as Anonymous Guest
                 </Button>
               </div>
-
-              <p className="text-[10px] text-center text-muted-foreground leading-relaxed">
-                🔒 Privacy Note: Your input is used purely to personalize your sandboxed instance variables. No spam, ever.
-              </p>
             </form>
           </CardContent>
         </Card>

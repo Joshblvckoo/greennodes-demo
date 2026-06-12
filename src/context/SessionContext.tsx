@@ -16,6 +16,7 @@ interface SessionContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string | null) => void;
+  logout: () => void;
   finishLoading: () => void;
 }
 
@@ -52,6 +53,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
   };
 
+  const logout = () => {
+    setIsAuthenticated(false);
+    setCompanyName(null);
+    setUserEmail(null);
+    setMetrics(null);
+  };
+
   const finishLoading = () => {
     setIsLoading(false);
     setIsAuthenticated(true);
@@ -66,6 +74,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         isAuthenticated, 
         isLoading, 
         login, 
+        logout,
         finishLoading 
       }}
     >

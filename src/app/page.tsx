@@ -19,14 +19,16 @@ import {
   X, 
   ChevronRight,
   ShieldCheck,
-  Award
+  Award,
+  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 type View = "dashboard" | "vault" | "chatops" | "audit" | "certification";
 
 function AppContent() {
-  const { isAuthenticated, isLoading, companyName } = useSession();
+  const { isAuthenticated, isLoading, companyName, logout } = useSession();
   const [activeView, setActiveView] = useState<View>("dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -129,9 +131,19 @@ function AppContent() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -z-10" />
 
         <div className="max-w-7xl mx-auto p-6 lg:p-12 pb-24">
-          <header className="mb-8 animate-in slide-in-from-top duration-700">
-            <h2 className="text-sm font-bold text-primary uppercase tracking-[0.2em] mb-2">{companyName} Control Center</h2>
-            <div className="h-px w-full bg-gradient-to-r from-primary/50 to-transparent" />
+          <header className="mb-8 flex justify-between items-end animate-in slide-in-from-top duration-700">
+            <div className="flex-1">
+              <h2 className="text-sm font-bold text-primary uppercase tracking-[0.2em] mb-2">{companyName} Cloud FinOps & GreenOps Control Center</h2>
+              <div className="h-px w-full bg-gradient-to-r from-primary/50 to-transparent" />
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={logout}
+              className="ml-6 h-9 border-white/10 text-muted-foreground hover:text-destructive hover:border-destructive/30 transition-all font-bold text-xs uppercase tracking-widest"
+            >
+              <LogOut className="mr-2 h-3.5 w-3.5" />
+              Logout Session
+            </Button>
           </header>
 
           {activeView === "dashboard" && <ExecutiveWorkspace />}
