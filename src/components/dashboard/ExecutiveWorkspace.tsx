@@ -132,7 +132,10 @@ export default function ExecutiveWorkspace() {
     let logIdx = 0;
     const logInterval = setInterval(() => {
       if (logIdx < script.length) {
-        setScanLogs(prev => [...prev, script[logIdx]]);
+        const nextMessage = script[logIdx];
+        if (nextMessage) {
+          setScanLogs(prev => [...prev, nextMessage]);
+        }
         logIdx++;
       }
     }, duration / (script.length + 1));
@@ -204,7 +207,7 @@ export default function ExecutiveWorkspace() {
               className="bg-black/40 rounded-lg p-4 h-32 overflow-y-auto font-mono text-[10px] space-y-1 scroll-smooth"
             >
               {scanLogs.map((log, i) => (
-                <div key={i} className={log.includes("Zombie") ? "text-destructive" : "text-white/60"}>
+                <div key={i} className={log?.includes("Zombie") ? "text-destructive" : "text-white/60"}>
                   {log}
                 </div>
               ))}

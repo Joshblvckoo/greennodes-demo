@@ -5,9 +5,14 @@ import { useSession } from "@/context/SessionContext";
 import { Terminal, Cpu, Globe, ShieldCheck, Zap, Layers } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
+interface LogEntry {
+  message: string;
+  timestamp: string;
+}
+
 export default function LoadingHandshake() {
   const { finishLoading } = useSession();
-  const [logs, setLogs] = useState<string[]>([]);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
   const [progress, setProgress] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   
@@ -52,7 +57,13 @@ export default function LoadingHandshake() {
     let currentLogIdx = 0;
     const logInterval = setInterval(() => {
       if (currentLogIdx < script.length) {
-        setLogs(prev => [...prev, script[currentLogIdx]]);
+        const nextMessage = script[currentLogIdx];
+        if (nextMessage) {
+          setLogs(prev => [...prev, {
+            message: nextMessage,
+            timestamp: new Date().toLocaleTimeString()
+          }]);
+        }
         currentLogIdx++;
       } else {
         clearInterval(logInterval);
@@ -102,9 +113,9 @@ export default function LoadingHandshake() {
           >
             {logs.map((log, i) => (
               <div key={i} className="flex gap-2">
-                <span className="text-primary/50 opacity-50">[{new Date().toLocaleTimeString()}]</span>
-                <span className={log.includes("Flagged as Zombie") ? "text-destructive" : log.includes("Complete") ? "text-primary font-bold" : "text-white/80"}>
-                  {log}
+                <span className="text-primary/50 opacity-50">[{log.timestamp}]</span>
+                <span className={log.message?.includes("Flagged as Zombie") ? "text-destructive" : log.message?.includes("Complete") ? "text-primary font-bold" : "text-white/80"}>
+                  {log.message}
                 </span>
               </div>
             ))}
