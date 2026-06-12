@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { format, subDays, isWeekend, startOfWeek, addWeeks } from "date-fns";
+import MetricsPanel from "./MetricsPanel";
 
 type Range = 7 | 14 | "full";
 
@@ -443,6 +444,8 @@ export default function ExecutiveWorkspace() {
           </Card>
         </div>
       </div>
+
+      <MetricsPanel />
     </div>
   );
 }
