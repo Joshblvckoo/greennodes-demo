@@ -1,8 +1,10 @@
+
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
+  // Use explicit dot-notation so Turbopack can inline strings at compile time
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -11,9 +13,9 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Simple diagnostic check to catch missing envs instantly in the console
+// Clean diagnostic log to instantly notify you in the browser console if strings drop out
 if (typeof window !== 'undefined' && !firebaseConfig.apiKey) {
-  console.warn("⚠️ Firebase API Key is undefined. Ensure .env is populated with real values.");
+  console.error("❌ Critical: Firebase Key unresolved. Verify .env.local prefixes!");
 }
 
 // Handle Next.js Fast Refresh cycles safely
