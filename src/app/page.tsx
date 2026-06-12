@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -6,7 +5,7 @@ import ExecutiveWorkspace from "@/components/dashboard/ExecutiveWorkspace";
 import TokenVault from "@/components/vault/TokenVault";
 import SlackSimulator from "@/components/chatops/SlackSimulator";
 import AuditRequest from "@/components/audit/AuditRequest";
-import GSFCertificationQuiz from "@/components/quiz/GSFCertificationQuiz";
+import GnrCertification from "@/components/dashboard/GnrCertification";
 import LoginGate from "@/components/auth/LoginGate";
 import LoadingHandshake from "@/components/auth/LoadingHandshake";
 import { SessionProvider, useSession } from "@/context/SessionContext";
@@ -156,7 +155,7 @@ function AppContent() {
           {activeView === "dashboard" && <ExecutiveWorkspace />}
           {activeView === "vault" && <TokenVault />}
           {activeView === "chatops" && <SlackSimulator />}
-          {activeView === "certification" && <GSFCertificationQuiz onAuditClick={() => setActiveView("audit")} />}
+          {activeView === "certification" && <GnrCertification onAuditClick={() => setActiveView("audit")} />}
           {activeView === "audit" && <AuditRequest />}
         </div>
       </main>
