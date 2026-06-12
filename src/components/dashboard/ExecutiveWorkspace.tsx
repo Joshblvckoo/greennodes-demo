@@ -26,12 +26,6 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { format, subDays, isWeekend } from "date-fns";
 
-const PIE_DATA = [
-  { name: 'Optimized', value: 65, color: 'hsl(var(--primary))' },
-  { name: 'Under-Utilized', value: 25, color: 'hsl(var(--chart-3))' },
-  { name: 'Zombie Resources', value: 10, color: 'hsl(var(--destructive))' },
-];
-
 export default function ExecutiveWorkspace() {
   const { toast } = useToast();
   const { metrics: initialMetrics, companyName } = useSession();
@@ -48,10 +42,13 @@ export default function ExecutiveWorkspace() {
     carbon: initialMetrics?.carbon || 842
   });
 
-  // Generate 14-day history logic with corporate cycles
-  const historicalData = useMemo(() => {
+  // Generate historical data only on client to avoid hydration mismatch
+  const [historicalData, setHistoricalData] = useState<any[]>([]);
+
+  useEffect(() => {
     const data = [];
-    const baseDate = new Date(2026, 5, 20); // June 2026
+    // Mocking "today" as June 20, 2026 for consistent demo timeline
+    const baseDate = new Date(2026, 5, 20); 
     
     for (let i = 13; i >= 0; i--) {
       const date = subDays(baseDate, i);
@@ -87,7 +84,7 @@ export default function ExecutiveWorkspace() {
         isDrop: i <= 1
       });
     }
-    return data;
+    setHistoricalData(data);
   }, []);
 
   const filteredHistory = useMemo(() => {
@@ -307,8 +304,19 @@ export default function ExecutiveWorkspace() {
                   strokeDasharray="5 5"
                   name="Carbon Intensity (kg)"
                 />
-                <ReferenceLine x="Jun 19" stroke="hsl(var(--destructive))" label={{ position: 'top', value: 'Spike', fill: 'hsl(var(--destructive))', fontSize: 10 }} />
-                <ReferenceLine x="Jun 25" stroke="hsl(var(--primary))" label={{ position: 'top', value: 'GN Active', fill: 'hsl(var(--primary))', fontSize: 10 }} strokeDasharray="3 3" />
+                <ReferenceLine 
+                  yAxisId="left"
+                  x="Jun 14" 
+                  stroke="hsl(var(--destructive))" 
+                  label={{ position: 'top', value: 'Spike', fill: 'hsl(var(--destructive))', fontSize: 10 }} 
+                />
+                <ReferenceLine 
+                  yAxisId="left"
+                  x="Jun 19" 
+                  stroke="hsl(var(--primary))" 
+                  label={{ position: 'top', value: 'GN Active', fill: 'hsl(var(--primary))', fontSize: 10 }} 
+                  strokeDasharray="3 3" 
+                />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -345,7 +353,7 @@ export default function ExecutiveWorkspace() {
                   Efficiency Leak Alert
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Spike detected 6 days ago caused a 40% carbon drift. Root cause: Major Software Release Deployment Drift.
+                  Spike detected in timeline caused a 40% carbon drift. Root cause: Major Software Release Deployment Drift.
                 </p>
               </div>
             </CardContent>
