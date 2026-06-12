@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
@@ -24,7 +25,9 @@ import {
   Cpu
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { format, subDays, isWeekend } from "date-fns";
+import { format, subDays, isWeekend, startOfWeek, addWeeks } from "date-fns";
+
+type Range = 7 | 14 | "full";
 
 export default function ExecutiveWorkspace() {
   const { toast } = useToast();
@@ -32,22 +35,17 @@ export default function ExecutiveWorkspace() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanLogs, setScanLogs] = useState<string[]>([]);
-  const [historyRange, setHistoryRange] = useState<7 | 14 | "full">(14);
+  const [historyRange, setHistoryRange] = useState<Range>(14);
   const scanTerminalRef = useRef<HTMLDivElement>(null);
 
-  const [metrics, setMetrics] = useState({
-    spend: initialMetrics?.spend || 142580,
-    waste: initialMetrics?.waste || 12450,
-    tokens: initialMetrics?.tokens || 315000,
-    carbon: initialMetrics?.carbon || 842
-  });
-
-  // Generate historical data only on client to avoid hydration mismatch
-  const [historicalData, setHistoricalData] = useState<any[]>([]);
+  // High-resolution daily data (14 days)
+  const [dailyHistory, setDailyHistory] = useState<any[]>([]);
+  // Macro weekly data (12 weeks)
+  const [weeklyHistory, setWeeklyHistory] = useState<any[]>([]);
 
   useEffect(() => {
-    const data = [];
-    // Mocking "today" as June 20, 2026 for consistent demo timeline
+    // 1. Generate Daily Data
+    const daily = [];
     const baseDate = new Date(2026, 5, 20); 
     
     for (let i = 13; i >= 0; i--) {
@@ -58,50 +56,75 @@ export default function ExecutiveWorkspace() {
       let spend = 45000 + Math.random() * 5000;
       let carbon = 1200 + Math.random() * 200;
 
-      // 1. Weekend Drops (60% reduction)
+      // Weekend Drops (60% reduction)
       if (isWeekEnd) {
         spend *= 0.4;
         carbon *= 0.4;
       }
 
-      // 2. Peak Season Spike (3-day operational spike in middle, around day 6-8 of history)
-      if (i >= 5 && i <= 7) {
-        spend *= 1.5;
-        carbon *= 1.6;
+      // Peak Season Spike (Days 6-8 of history - roughly "last week")
+      if (i >= 6 && i <= 8) {
+        spend *= 1.8;
+        carbon *= 2.0;
       }
 
-      // 3. Post-GreenNodes Drop (final 2 days)
+      // Post-GreenNodes Drop (final 2 days)
       if (i <= 1) {
         spend *= 0.65;
         carbon *= 0.6;
       }
 
-      data.push({
-        day: dayName,
+      daily.push({
+        label: dayName,
         spend: Math.round(spend),
         carbon: Math.round(carbon),
-        isSpike: i >= 5 && i <= 7,
+        isSpike: i >= 6 && i <= 8,
         isDrop: i <= 1
       });
     }
-    setHistoricalData(data);
+    setDailyHistory(daily);
+
+    // 2. Generate Weekly Data (12 weeks)
+    const weekly = [];
+    for (let i = 12; i >= 1; i--) {
+      // Long term trend: Gradual optimization
+      // Week 1 is highest, Week 12 is lowest
+      const optimizationFactor = 1 - ( (12 - i) * 0.04 ); // Approx 40% reduction over 12 weeks
+      const baseSpend = 320000 * optimizationFactor;
+      const baseCarbon = 8500 * optimizationFactor;
+
+      weekly.push({
+        label: `Week ${i.toString().padStart(2, '0')}`,
+        spend: Math.round(baseSpend + (Math.random() * 20000)),
+        carbon: Math.round(baseCarbon + (Math.random() * 500)),
+        isMacro: true
+      });
+    }
+    setWeeklyHistory(weekly);
   }, []);
 
-  const filteredHistory = useMemo(() => {
-    if (historyRange === 7) return historicalData.slice(-7);
-    return historicalData;
-  }, [historicalData, historyRange]);
+  const activeData = useMemo(() => {
+    if (historyRange === 7) return dailyHistory.slice(-7);
+    if (historyRange === 14) return dailyHistory;
+    return weeklyHistory;
+  }, [dailyHistory, weeklyHistory, historyRange]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMetrics(prev => ({
-        ...prev,
-        spend: prev.spend + (Math.random() * 5),
-        tokens: prev.tokens + (Math.random() * 2),
-      }));
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
+  // Dynamically calculate KPIs based on current view to "match weights"
+  const currentMetrics = useMemo(() => {
+    const totalSpend = activeData.reduce((acc, curr) => acc + curr.spend, 0);
+    const totalCarbon = activeData.reduce((acc, curr) => acc + curr.carbon, 0);
+    // Waste is estimated as 15% of total spend in this simulation
+    const totalWaste = totalSpend * 0.15;
+    // Tokens loosely correlate with spend activity
+    const totalTokens = totalSpend * 2.2;
+
+    return {
+      spend: totalSpend,
+      waste: totalWaste,
+      tokens: totalTokens,
+      carbon: totalCarbon
+    };
+  }, [activeData]);
 
   const handleScan = () => {
     setIsScanning(true);
@@ -216,29 +239,29 @@ export default function ExecutiveWorkspace() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPIItem 
-          title="Total Infra Spend" 
-          value={`$${metrics.spend.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
+          title={`Total ${historyRange === 'full' ? 'Historical' : 'Period'} Spend`}
+          value={`$${currentMetrics.spend.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
           icon={<Zap className="h-5 w-5 text-primary" />}
-          trend="+2.4% vs last mo"
+          trend={historyRange === 'full' ? "12 Week Aggregation" : `${historyRange}D Aggregation`}
         />
         <KPIItem 
-          title="Wasted Cloud Budget" 
-          value={`$${metrics.waste.toLocaleString()}`}
+          title="Potential Waste" 
+          value={`$${currentMetrics.waste.toLocaleString(undefined, { maximumFractionDigits: 0 })}`}
           icon={<Trash2 className="h-5 w-5 text-destructive" />}
-          trend="-12% optimization target"
+          trend="-15% Estimated Drift"
           isWaste
         />
         <KPIItem 
-          title="Active Token Balance" 
-          value={`${metrics.tokens.toLocaleString()} GNC`}
+          title="Period Token Flux" 
+          value={`${currentMetrics.tokens.toLocaleString(undefined, { maximumFractionDigits: 0 })} GNC`}
           icon={<Coins className="h-5 w-5 text-primary" />}
-          trend="Scale Tier Status"
+          trend="Calculated yield weight"
         />
         <KPIItem 
-          title="Avoided Carbon" 
-          value={`${metrics.carbon} kg CO2e`}
+          title="Period Carbon Load" 
+          value={`${currentMetrics.carbon.toLocaleString(undefined, { maximumFractionDigits: 0 })} kg`}
           icon={<Leaf className="h-5 w-5 text-accent" />}
-          trend="+15.2% sustainability gain"
+          trend="Total footprint for view"
         />
       </div>
 
@@ -250,7 +273,11 @@ export default function ExecutiveWorkspace() {
                 <RefreshCcw className="h-4 w-4 text-primary" />
                 Cloud Spend & Carbon Intensity Timeline
               </CardTitle>
-              <CardDescription>Simulated 14-day history demonstrating GreenNodes impact.</CardDescription>
+              <CardDescription>
+                {historyRange === 'full' 
+                  ? "Macro-trend analysis across 12 weeks showing background optimization gains." 
+                  : `Detailed ${historyRange}-day view demonstrating operational cycles.`}
+              </CardDescription>
             </div>
             <div className="flex gap-2">
               <Button 
@@ -270,30 +297,58 @@ export default function ExecutiveWorkspace() {
                 size="sm" 
                 onClick={() => setHistoryRange("full")}
                 className="text-[10px] h-7 px-3"
-              >History</Button>
+              >Full History</Button>
             </div>
           </CardHeader>
           <CardContent className="h-[350px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={filteredHistory}>
+              <LineChart data={activeData} margin={{ top: 20, right: 20, left: 20, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted))" vertical={false} />
-                <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={10} />
-                <YAxis yAxisId="left" stroke="hsl(var(--muted-foreground))" fontSize={10} />
-                <YAxis yAxisId="right" orientation="right" stroke="hsl(var(--muted-foreground))" fontSize={10} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'hsl(var(--card))', border: 'none', borderRadius: '8px' }}
-                  itemStyle={{ color: 'hsl(var(--foreground))' }}
+                <XAxis 
+                  dataKey="label" 
+                  stroke="hsl(var(--muted-foreground))" 
+                  fontSize={10} 
+                  tickLine={false}
+                  axisLine={false}
                 />
-                <Legend iconType="circle" />
+                <YAxis 
+                  yAxisId="left" 
+                  stroke="hsl(var(--muted-foreground))" 
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
+                />
+                <YAxis 
+                  yAxisId="right" 
+                  orientation="right" 
+                  stroke="hsl(var(--muted-foreground))" 
+                  fontSize={10}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(val) => `${val}kg`}
+                />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'hsl(var(--card))', border: 'none', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)' }}
+                  itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                  labelStyle={{ marginBottom: '4px', fontSize: '10px', color: 'hsl(var(--muted-foreground))', textTransform: 'uppercase', letterSpacing: '0.1em' }}
+                />
+                <Legend 
+                  iconType="circle" 
+                  verticalAlign="top" 
+                  align="right" 
+                  wrapperStyle={{ paddingBottom: '20px', fontSize: '10px', fontWeight: 'bold' }}
+                />
                 <Line 
                   yAxisId="left" 
                   type="monotone" 
                   dataKey="spend" 
                   stroke="hsl(var(--primary))" 
                   strokeWidth={3} 
-                  dot={{ r: 4, fill: 'hsl(var(--primary))' }}
-                  activeDot={{ r: 6 }}
-                  name="Daily Spend ($)"
+                  dot={historyRange !== 'full'}
+                  activeDot={{ r: 6, strokeWidth: 0 }}
+                  name="Cloud Spend ($)"
+                  animationDuration={1500}
                 />
                 <Line 
                   yAxisId="right" 
@@ -302,21 +357,29 @@ export default function ExecutiveWorkspace() {
                   stroke="hsl(var(--chart-3))" 
                   strokeWidth={2} 
                   strokeDasharray="5 5"
+                  dot={false}
                   name="Carbon Intensity (kg)"
+                  animationDuration={1500}
                 />
-                <ReferenceLine 
-                  yAxisId="left"
-                  x="Jun 14" 
-                  stroke="hsl(var(--destructive))" 
-                  label={{ position: 'top', value: 'Spike', fill: 'hsl(var(--destructive))', fontSize: 10 }} 
-                />
-                <ReferenceLine 
-                  yAxisId="left"
-                  x="Jun 19" 
-                  stroke="hsl(var(--primary))" 
-                  label={{ position: 'top', value: 'GN Active', fill: 'hsl(var(--primary))', fontSize: 10 }} 
-                  strokeDasharray="3 3" 
-                />
+                
+                {historyRange === 14 && (
+                  <ReferenceLine 
+                    yAxisId="left"
+                    x={dailyHistory[7]?.label} 
+                    stroke="hsl(var(--destructive))" 
+                    label={{ position: 'top', value: 'Spike', fill: 'hsl(var(--destructive))', fontSize: 10, fontWeight: 'bold' }} 
+                  />
+                )}
+                
+                {(historyRange === 14 || historyRange === 7) && (
+                  <ReferenceLine 
+                    yAxisId="left"
+                    x={dailyHistory[12]?.label} 
+                    stroke="hsl(var(--primary))" 
+                    label={{ position: 'top', value: 'GN Active', fill: 'hsl(var(--primary))', fontSize: 10, fontWeight: 'bold' }} 
+                    strokeDasharray="3 3" 
+                  />
+                )}
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -343,7 +406,7 @@ export default function ExecutiveWorkspace() {
                 <div className="flex items-start gap-2">
                   <span className="text-primary font-bold">💡</span>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Insight: Automated weekend downscaling would preserve an estimated 45,000 GNC tokens per month in your Vault.
+                    Insight: Automated weekend downscaling would preserve an estimated 45,000 GNC tokens per month in your Vault based on your current {historyRange === 'full' ? 'quarterly' : 'weekly'} run-rate.
                   </p>
                 </div>
               </div>
@@ -353,21 +416,27 @@ export default function ExecutiveWorkspace() {
                   Efficiency Leak Alert
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Spike detected in timeline caused a 40% carbon drift. Root cause: Major Software Release Deployment Drift.
+                  {historyRange === 'full' 
+                    ? "Macro view confirms initial drift stabilized after GreenNodes activation." 
+                    : "Spike detected in timeline caused a 40% carbon drift. Root cause: Deployment Drift."}
                 </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-none">
+          <Card className="glass-card border-none bg-gradient-to-br from-primary/10 to-transparent">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-accent/20 flex items-center justify-center text-accent">
+                <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center text-primary glow-primary">
                   <ArrowDownRight className="h-6 w-6" />
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">Post-Optimization</p>
-                  <p className="text-xl font-black">-35% Emissions</p>
+                  <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
+                    {historyRange === 'full' ? 'Quarterly Savings' : 'Period Savings'}
+                  </p>
+                  <p className="text-xl font-black text-primary">
+                    -{historyRange === 'full' ? '28%' : '35%'} Emissions
+                  </p>
                 </div>
               </div>
             </CardContent>
