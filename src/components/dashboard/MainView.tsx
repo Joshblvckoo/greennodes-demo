@@ -112,10 +112,14 @@ export default function MainView() {
           </div>
           
           {/* Interactive Custom Tooltip In-UI Display */}
-          {hoveredIndex !== null && dashboardData.points[hoveredIndex] && (
+          {hoveredIndex !== null && dashboardData?.points?.[hoveredIndex] && (
             <div className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 rounded text-right font-mono text-xs text-zinc-300 animate-in fade-in slide-in-from-right-2">
-              <span className="text-zinc-500 text-[10px] mr-2">[{dashboardData.points[hoveredIndex].label}]:</span>
-              <span className="text-rose-400 font-bold">${dashboardData.points[hoveredIndex].amount.toLocaleString()}</span>
+              <span className="text-zinc-500 text-[10px] mr-2">
+                [{dashboardData.points[hoveredIndex].label}]:
+              </span>
+              <span className="text-rose-400 font-bold">
+                ${dashboardData.points[hoveredIndex].amount?.toLocaleString() ?? '0'}
+              </span>
             </div>
           )}
         </div>
