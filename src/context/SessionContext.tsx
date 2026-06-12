@@ -89,10 +89,22 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         const anonymousUser = await signInAnonymously(auth);
         console.log("Sandbox Access Granted. Session ID:", anonymousUser.user.uid);
       }
-    } catch (error) {
-      console.error("Auth Handshake Interrupted:", error);
+    } catch (error: any) {
+      console.warn("Auth Handshake Attempt Logged:", error.code);
       setIsLoading(false);
-      throw error;
+
+      // Map Firebase error codes to user-friendly messages
+      if (error.code === 'auth/invalid-credential') {
+        throw new Error("Invalid email address or access token password configuration.");
+      }
+      if (error.code === 'auth/invalid-email') {
+        throw new Error("The format of the email address provided is invalid.");
+      }
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        throw new Error("Authentication failed. Please check your corporate credentials.");
+      }
+      
+      throw new Error(error.message || "Enterprise gateway connection interrupted. Try again later.");
     }
   };
 
