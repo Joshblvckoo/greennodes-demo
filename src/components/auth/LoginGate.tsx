@@ -21,7 +21,8 @@ export default function LoginGate() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await login(email, password || undefined);
+      // Bind directly to the login function for Corporate Email
+      await login(email, password);
     } catch (err: any) {
       console.error(err);
       toast({
@@ -29,7 +30,6 @@ export default function LoginGate() {
         title: "Session Fault",
         description: err.message || "Failed to establish environment handshake.",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -37,7 +37,8 @@ export default function LoginGate() {
   const handleGuestAccess = async () => {
     setIsSubmitting(true);
     try {
-      await login(null);
+      // Bind directly to parameterless execution for Anonymous Guest Access
+      await login();
     } catch (err: any) {
       console.error(err);
       toast({
@@ -45,7 +46,6 @@ export default function LoginGate() {
         title: "Guest Access Fault",
         description: err.message || "Public demo sandbox mode unavailable.",
       });
-    } finally {
       setIsSubmitting(false);
     }
   };

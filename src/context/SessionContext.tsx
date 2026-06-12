@@ -19,7 +19,7 @@ interface SessionContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   isInitialLoading: boolean;
-  login: (email: string | null, password?: string) => Promise<void>;
+  login: (email?: string, password?: string) => Promise<void>;
   logout: () => Promise<void>;
   finishLoading: () => void;
 }
@@ -68,21 +68,26 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const login = async (email: string | null, password?: string) => {
+  const login = async (email?: string, password?: string) => {
     setIsLoading(true);
     try {
       if (email && password) {
         // Path A: Authenticated Enterprise Access
         localStorage.setItem('testerEmail', email);
-        await signInWithEmailAndPassword(auth, email, password);
+        const credential = await signInWithEmailAndPassword(auth, email, password);
+        console.log("Enterprise Session Established:", credential.user.uid);
       } else {
         // Path B: Anonymous Guest Access (Sandbox environment)
+        if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+          throw new Error("Client Handshake Blocked: Missing Environment Variables.");
+        }
         if (email) {
           localStorage.setItem('testerEmail', email);
         } else {
           localStorage.setItem('testerEmail', "anonymous@tester.internal");
         }
-        await signInAnonymously(auth);
+        const anonymousUser = await signInAnonymously(auth);
+        console.log("Sandbox Access Granted. Session ID:", anonymousUser.user.uid);
       }
     } catch (error) {
       console.error("Auth Handshake Interrupted:", error);
