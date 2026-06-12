@@ -1,8 +1,9 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import { useSession } from "@/context/SessionContext";
-import { Terminal, Cpu, Globe, ShieldCheck, Zap, Layers } from "lucide-react";
+import { Terminal, Cpu, Globe, ShieldCheck, Zap } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface LogEntry {
@@ -16,62 +17,33 @@ export default function LoadingHandshake() {
   const [progress, setProgress] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   
-  // Dynamic duration logic: 10-15 seconds
-  const totalDuration = useRef(10000 + Math.random() * 5000);
-  const zombieAssets = useRef(Math.floor(Math.random() * 12) + 3);
+  const stepDuration = 1500; // 1.5 seconds per step as requested
 
   useEffect(() => {
-    const startTime = Date.now();
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const currentProgress = Math.min((elapsed / totalDuration.current) * 100, 100);
-      setProgress(currentProgress);
+    const script = [
+      "Establishing secure OAuth2 handshake with hyper-scalers...",
+      "Syncing configuration items with ServiceNow Core Ledger...",
+      "Parsing real-time regional grid variables via Visual Studio GSF Engine...",
+      "Decrypting token vault balances... Complete."
+    ];
 
-      if (currentProgress >= 100) {
+    let currentIdx = 0;
+    const interval = setInterval(() => {
+      if (currentIdx < script.length) {
+        setLogs(prev => [...prev, {
+          message: script[currentIdx],
+          timestamp: new Date().toLocaleTimeString()
+        }]);
+        setProgress(((currentIdx + 1) / script.length) * 100);
+        currentIdx++;
+      } else {
         clearInterval(interval);
         setTimeout(finishLoading, 800);
       }
-    }, 50);
+    }, stepDuration);
 
     return () => clearInterval(interval);
   }, [finishLoading]);
-
-  useEffect(() => {
-    const assetLines = Array.from({ length: zombieAssets.current }).map(() => {
-      const id = Math.random().toString(36).substring(2, 10);
-      const cpu = (Math.random() * 4).toFixed(1);
-      return `[AUDIT] Asset ID i-${id} has a CPU utilization of ${cpu}%. Flagged as Zombie.`;
-    });
-
-    const script = [
-      "[INIT] Establishing authenticated handshake via Firebase auth tokens...",
-      "[AUTH] JWT validated with Google Identity Platform.",
-      "[SCANNING] Pinging regional cloud clusters (us-east-1, eu-west-1, asia-east-1)...",
-      ...assetLines,
-      "[GSF ENGINE] Computing SCI score: S = (E * I) + M...",
-      "[ANALYSIS] Decoupling carbon intensity from infrastructure spend...",
-      "[SYNC] Writing immutable state ledger back to ServiceNow Core tables...",
-      "[SYNC] Complete. Session ready."
-    ];
-
-    let currentLogIdx = 0;
-    const logInterval = setInterval(() => {
-      if (currentLogIdx < script.length) {
-        const nextMessage = script[currentLogIdx];
-        if (nextMessage) {
-          setLogs(prev => [...prev, {
-            message: nextMessage,
-            timestamp: new Date().toLocaleTimeString()
-          }]);
-        }
-        currentLogIdx++;
-      } else {
-        clearInterval(logInterval);
-      }
-    }, totalDuration.current / (script.length + 2));
-
-    return () => clearInterval(logInterval);
-  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -114,7 +86,7 @@ export default function LoadingHandshake() {
             {logs.map((log, i) => (
               <div key={i} className="flex gap-2">
                 <span className="text-primary/50 opacity-50">[{log.timestamp}]</span>
-                <span className={log.message?.includes("Flagged as Zombie") ? "text-destructive" : log.message?.includes("Complete") ? "text-primary font-bold" : "text-white/80"}>
+                <span className={log.message?.includes("Complete") ? "text-primary font-bold" : "text-white/80"}>
                   {log.message}
                 </span>
               </div>
@@ -126,29 +98,24 @@ export default function LoadingHandshake() {
         <div className="space-y-4">
           <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
             <span>Progress: {Math.round(progress)}%</span>
-            <span>Latency: {Math.round(totalDuration.current / 100)}ms</span>
+            <span>Security Status: Authenticated</span>
           </div>
           <Progress value={progress} className="h-1.5 bg-white/5" />
           <div className="grid grid-cols-3 gap-4 pt-2">
-            <StatusIcon icon={<Globe />} label="Clusters" status="Live" />
-            <StatusIcon icon={<ShieldCheck />} label="Vault" status="Secured" />
-            <StatusIcon icon={<Zap />} label="GSF" status="Optimizing" />
+            <div className="flex items-center gap-2 opacity-50">
+              <Globe className="text-primary h-3 w-3" />
+              <span className="text-[9px] uppercase font-bold text-white">OAuth2 Handshake</span>
+            </div>
+            <div className="flex items-center gap-2 opacity-50">
+              <ShieldCheck className="text-primary h-3 w-3" />
+              <span className="text-[9px] uppercase font-bold text-white">Ledger Sync</span>
+            </div>
+            <div className="flex items-center gap-2 opacity-50">
+              <Zap className="text-primary h-3 w-3" />
+              <span className="text-[9px] uppercase font-bold text-white">GSF Engine Ready</span>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function StatusIcon({ icon, label, status }: { icon: React.ReactNode, label: string, status: string }) {
-  return (
-    <div className="flex items-center gap-2 opacity-50">
-      <div className="p-1.5 bg-white/5 rounded text-primary">
-        {React.cloneElement(icon as React.ReactElement, { size: 12 })}
-      </div>
-      <div className="text-[9px] uppercase font-bold tracking-tighter">
-        <span className="text-muted-foreground block">{label}</span>
-        <span className="text-white">{status}</span>
       </div>
     </div>
   );

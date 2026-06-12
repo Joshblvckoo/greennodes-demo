@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -28,9 +29,13 @@ import { Button } from "@/components/ui/button";
 type View = "dashboard" | "vault" | "chatops" | "audit" | "certification";
 
 function AppContent() {
-  const { isAuthenticated, isLoading, companyName, logout } = useSession();
+  const { isAuthenticated, isLoading, isInitialLoading, companyName, logout } = useSession();
   const [activeView, setActiveView] = useState<View>("dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  if (isInitialLoading) {
+    return <div className="min-h-screen bg-[#020617] flex items-center justify-center font-mono text-emerald-400">Loading Instance...</div>;
+  }
 
   if (!isAuthenticated && !isLoading) {
     return <LoginGate />;
@@ -48,8 +53,10 @@ function AppContent() {
     { id: "audit", name: "Cloud Waste Audit", icon: ClipboardList },
   ];
 
+  const domainName = companyName?.toUpperCase() || "SANDBOX CLUSTER";
+
   return (
-    <div className="min-h-screen bg-background flex text-foreground animate-in fade-in duration-1000">
+    <div className="min-h-screen bg-[#020617] flex text-foreground animate-in fade-in duration-1000">
       {/* Sidebar Mobile Toggle */}
       <button 
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -76,7 +83,7 @@ function AppContent() {
             <div className="w-8 h-8 rounded bg-primary flex items-center justify-center glow-primary">
               <ShieldCheck className="text-primary-foreground h-5 w-5" />
             </div>
-            {isSidebarOpen && <span className="font-black text-lg tracking-tighter uppercase">GreenNodes <span className="text-primary">Core</span></span>}
+            {isSidebarOpen && <span className="font-black text-lg tracking-tighter uppercase text-emerald-400">GreenNodes Core</span>}
           </div>
         </div>
 
@@ -133,13 +140,13 @@ function AppContent() {
         <div className="max-w-7xl mx-auto p-6 lg:p-12 pb-24">
           <header className="mb-8 flex justify-between items-end animate-in slide-in-from-top duration-700">
             <div className="flex-1">
-              <h2 className="text-sm font-bold text-primary uppercase tracking-[0.2em] mb-2">{companyName} Cloud FinOps & GreenOps Control Center</h2>
+              <h2 className="text-sm font-bold text-emerald-400 uppercase tracking-[0.2em] mb-2">{domainName} OPERATIONS NODE</h2>
               <div className="h-px w-full bg-gradient-to-r from-primary/50 to-transparent" />
             </div>
             <Button 
               variant="outline" 
               onClick={logout}
-              className="ml-6 h-9 border-white/10 text-muted-foreground hover:text-destructive hover:border-destructive/30 transition-all font-bold text-xs uppercase tracking-widest"
+              className="ml-6 h-9 border-white/10 text-slate-300 hover:text-red-400 hover:border-red-900 transition-all font-bold text-xs uppercase tracking-widest bg-slate-800"
             >
               <LogOut className="mr-2 h-3.5 w-3.5" />
               Logout Session

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -66,17 +67,16 @@ export default function AuditRequest() {
     const fullName = formData.get("fullName") as string;
     const domain = email.split('@')[1] || "Global Sandbox Alpha";
 
-    // Simulation Steps
+    // 12-Second Progress Log Stepper Engine (2s per step)
     const steps = [
-      `[INIT] Handshaking securely with regional data nodes via Firebase network edge...`,
-      `[AUTH] Mapping structural environment profiles for enterprise target: ${domain}`,
-      `[SCANNING] Crawling configuration components within ${provider} cluster registries...`,
-      `[ANALYSIS] Flagged zombie resources and under-allocated persistent volume storage blocks.`,
-      `[CALCULATOR] Computing GSF SCI Matrix metric: S = (E * I) + M...`,
-      `[LEDGER] Uploading atomic audit transaction documents safely into Cloud Firestore...`
+      `[INIT] Validating active Firebase core user session authorization...`,
+      `[CONNECT] Mapping subnets belonging to: ${domain}`,
+      `[SCANNING] Pinging regional asset endpoints on ${provider}...`,
+      `[AUDIT] 14 Zombie compute nodes flagged matching criteria: Idle > 48 Hrs.`,
+      `[CALCULATOR] Computing platform SCI emission score output weights...`,
+      `[LEDGER] Committing structural audit payload records to Cloud Firestore ledger...`
     ];
 
-    // Run simulation loop
     for (let i = 0; i < steps.length; i++) {
       setScanLogs(prev => [...prev, steps[i]]);
       setProgress(((i + 1) / steps.length) * 100);
@@ -126,7 +126,7 @@ export default function AuditRequest() {
         <div className="grid grid-cols-1 md:grid-cols-5 h-full">
           <div className="md:col-span-2 bg-primary/5 p-8 border-r border-white/5 flex flex-col justify-between">
             <div className="space-y-6">
-              <h3 className="text-xl font-bold">Audit Deliverables:</h3>
+              <h3 className="text-xl font-bold text-emerald-400">Audit Deliverables:</h3>
               <ul className="space-y-4">
                 <li className="flex items-start gap-3 text-sm">
                   <div className="mt-1 p-1 bg-primary/20 rounded">
@@ -218,19 +218,6 @@ export default function AuditRequest() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="spend">Estimated Monthly Overhead</Label>
-                    <Select name="spend" required>
-                      <SelectTrigger className="bg-background/50 border-white/5">
-                        <SelectValue placeholder="Select range" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="under-10k">Under $10,000 / mo</SelectItem>
-                        <SelectItem value="10k-50k">$10,000 - $50,000 / mo</SelectItem>
-                        <SelectItem value="over-50k">Over $50,000 / mo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
                     <Label htmlFor="provider">Primary Cloud Infrastructure</Label>
                     <Select name="provider" required>
                       <SelectTrigger className="bg-background/50 border-white/5">
@@ -244,12 +231,25 @@ export default function AuditRequest() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="spend">Estimated Monthly Overhead</Label>
+                    <Select name="spend" required>
+                      <SelectTrigger className="bg-background/50 border-white/5">
+                        <SelectValue placeholder="Select range" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="under-10k">Under $10,000 / mo</SelectItem>
+                        <SelectItem value="10k-50k">$10,000 - $50,000 / mo</SelectItem>
+                        <SelectItem value="over-50k">Over $50,000 / mo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <Button 
                   type="submit" 
                   disabled={loading}
-                  className="w-full h-12 bg-primary text-primary-foreground font-black uppercase tracking-widest glow-primary hover:bg-primary/90 transition-all"
+                  className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest glow-primary transition-all"
                 >
                   <Send className="mr-2 h-4 w-4" />
                   Execute Deep Environment Audit
@@ -282,8 +282,8 @@ export default function AuditRequest() {
             </div>
           </div>
           <DialogFooter className="p-6 pt-0 border-t border-white/5">
-            <Button onClick={() => setShowModal(false)} className="w-full bg-primary text-primary-foreground font-bold">
-              ✓ Environment Log Completed!
+            <Button onClick={() => setShowModal(false)} className="w-full bg-blue-600 text-white font-bold">
+              ✓ Audit Blueprint Recorded Successfully
             </Button>
           </DialogFooter>
         </DialogContent>

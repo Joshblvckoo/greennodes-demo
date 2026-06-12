@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -6,19 +7,34 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Lock, Globe, Mail } from "lucide-react";
+import { ShieldCheck, Mail, Globe } from "lucide-react";
 
 export default function LoginGate() {
   const { login } = useSession();
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(email);
+    setIsSubmitting(true);
+    try {
+      await login(email);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleGuestAccess = () => {
-    login(null);
+  const handleGuestAccess = async () => {
+    setIsSubmitting(true);
+    try {
+      await login(null);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -30,15 +46,15 @@ export default function LoginGate() {
       <div className="w-full max-w-md space-y-8 animate-in fade-in zoom-in-95 duration-700">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/20 border border-primary/30 glow-primary mb-4">
-            <ShieldCheck className="h-8 w-8 text-primary" />
+            <ShieldCheck className="h-8 w-8 text-emerald-400" />
           </div>
-          <h1 className="text-4xl font-black tracking-tighter uppercase">
-            GreenNodes <span className="text-primary">Core</span>
+          <h1 className="text-4xl font-black tracking-tighter uppercase text-emerald-400">
+            GreenNodes Core
           </h1>
           <p className="text-muted-foreground font-medium uppercase tracking-widest text-xs">Enterprise GreenOps Environment Entry</p>
         </div>
 
-        <Card className="glass-card border-white/10 shadow-2xl">
+        <Card className="glass-card border-white/10 shadow-2xl bg-slate-900">
           <CardHeader>
             <CardTitle className="text-2xl font-bold">Session Login</CardTitle>
             <CardDescription>
@@ -60,19 +76,23 @@ export default function LoginGate() {
                       placeholder="name@company.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="bg-background/50 border-white/10 pl-10 h-12"
+                      className="bg-slate-950 border-white/10 pl-10 h-12 text-white"
                       required
                     />
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-2 block italic">
+                  <p className="text-[10px] text-muted-foreground mt-2 block">
                     🔒 Sandbox Access: Your input builds localized instance variables. No spam.
                   </p>
                 </div>
               </div>
 
               <div className="space-y-3 pt-2">
-                <Button type="submit" className="w-full h-12 bg-primary text-primary-foreground font-black uppercase tracking-widest glow-primary hover:bg-primary/90">
-                  Establish Session Handshake
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="w-full h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest glow-primary"
+                >
+                  {isSubmitting ? "Establishing Session..." : "Establish Session Handshake"}
                 </Button>
                 
                 <div className="relative flex items-center py-2">
@@ -84,6 +104,7 @@ export default function LoginGate() {
                 <Button 
                   type="button" 
                   variant="outline" 
+                  disabled={isSubmitting}
                   onClick={handleGuestAccess}
                   className="w-full h-12 border-white/10 hover:bg-white/5 font-bold uppercase tracking-widest"
                 >
