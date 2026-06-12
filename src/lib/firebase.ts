@@ -13,7 +13,7 @@ const firebaseConfig = {
 
 // Simple diagnostic check to catch missing envs instantly in the console
 if (typeof window !== 'undefined' && !firebaseConfig.apiKey) {
-  console.error("⚠️ Firebase API Key is undefined. Check your .env prefixes!");
+  console.warn("⚠️ Firebase API Key is undefined. Ensure .env is populated with real values.");
 }
 
 // Handle Next.js Fast Refresh cycles safely

@@ -7,20 +7,28 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Mail, Globe } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { ShieldCheck, Mail, Globe, Lock } from "lucide-react";
 
 export default function LoginGate() {
   const { login } = useSession();
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await login(email);
-    } catch (err) {
+      await login(email, password || undefined);
+    } catch (err: any) {
       console.error(err);
+      toast({
+        variant: "destructive",
+        title: "Session Fault",
+        description: err.message || "Failed to establish environment handshake.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -30,8 +38,13 @@ export default function LoginGate() {
     setIsSubmitting(true);
     try {
       await login(null);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      toast({
+        variant: "destructive",
+        title: "Guest Access Fault",
+        description: err.message || "Public demo sandbox mode unavailable.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -80,8 +93,25 @@ export default function LoginGate() {
                       required
                     />
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-2 block">
-                    🔒 Sandbox Access: Your input builds localized instance variables. No spam.
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-xs uppercase tracking-widest font-bold opacity-70">
+                    Access Token / Password
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="bg-slate-950 border-white/10 pl-10 h-12 text-white"
+                    />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-2 block italic">
+                    💡 Leave blank for Public Demo Sandbox Mode
                   </p>
                 </div>
               </div>
@@ -112,6 +142,9 @@ export default function LoginGate() {
                   Access as Anonymous Guest
                 </Button>
               </div>
+              <p className="text-[10px] text-center text-muted-foreground uppercase tracking-tighter">
+                🔒 Privacy Note: Your input is used purely to personalize your sandboxed instance variables. No spam, ever.
+              </p>
             </form>
           </CardContent>
         </Card>

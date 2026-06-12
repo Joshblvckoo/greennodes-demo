@@ -3,7 +3,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { auth } from "@/lib/firebase";
-import { onAuthStateChanged, signInAnonymously, signOut } from "firebase/auth";
+import { onAuthStateChanged, signInAnonymously, signInWithEmailAndPassword, signOut } from "firebase/auth";
 
 interface SessionMetrics {
   waste: number;
@@ -19,7 +19,7 @@ interface SessionContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   isInitialLoading: boolean;
-  login: (email: string | null) => Promise<void>;
+  login: (email: string | null, password?: string) => Promise<void>;
   logout: () => Promise<void>;
   finishLoading: () => void;
 }
@@ -37,7 +37,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        const storedEmail = localStorage.getItem('testerEmail');
+        const storedEmail = localStorage.getItem('testerEmail') || user.email || "anonymous@tester.internal";
         setUserEmail(storedEmail);
         
         let name = "Global Sandbox Alpha";
@@ -68,15 +68,22 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  const login = async (email: string | null) => {
+  const login = async (email: string | null, password?: string) => {
+    setIsLoading(true);
     try {
-      if (email) {
+      if (email && password) {
+        // Path A: Authenticated Enterprise Access
         localStorage.setItem('testerEmail', email);
+        await signInWithEmailAndPassword(auth, email, password);
       } else {
-        localStorage.setItem('testerEmail', "anonymous@tester.internal");
+        // Path B: Anonymous Guest Access (Sandbox environment)
+        if (email) {
+          localStorage.setItem('testerEmail', email);
+        } else {
+          localStorage.setItem('testerEmail', "anonymous@tester.internal");
+        }
+        await signInAnonymously(auth);
       }
-      setIsLoading(true);
-      await signInAnonymously(auth);
     } catch (error) {
       console.error("Auth Handshake Interrupted:", error);
       setIsLoading(false);
