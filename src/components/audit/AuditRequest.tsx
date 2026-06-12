@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import React, { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useSession } from "@/context/SessionContext";
 import { 
   Select, 
   SelectContent, 
@@ -24,9 +25,22 @@ import { generateAuditBlueprint } from "@/ai/flows/generate-audit-blueprint";
 import { Loader2, Send, Sparkles, LayoutDashboard, CheckCircle } from "lucide-react";
 
 export default function AuditRequest() {
+  const { userEmail, companyName } = useSession();
   const [loading, setLoading] = useState(false);
   const [blueprint, setBlueprint] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  
+  // State for form fields to enable pre-filling
+  const [formDataState, setFormDataState] = useState({
+    fullName: "",
+    corporateEmail: userEmail || "",
+  });
+
+  useEffect(() => {
+    if (userEmail) {
+      setFormDataState(prev => ({ ...prev, corporateEmail: userEmail }));
+    }
+  }, [userEmail]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -58,7 +72,7 @@ export default function AuditRequest() {
           Request Free 48-Hour <span className="text-primary glow-primary">Cloud Waste Audit</span>
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Get a comprehensive analysis of your cloud footprint and a personalized ServiceNow automation roadmap.
+          Get a comprehensive analysis of your cloud footprint and a personalized ServiceNow automation roadmap for {companyName || "your organization"}.
         </p>
       </div>
 
@@ -113,7 +127,9 @@ export default function AuditRequest() {
                     name="fullName" 
                     placeholder="John Doe" 
                     required 
-                    className="bg-background/50 border-white/5" 
+                    className="bg-background/50 border-white/5"
+                    value={formDataState.fullName}
+                    onChange={(e) => setFormDataState({...formDataState, fullName: e.target.value})}
                   />
                 </div>
                 <div className="space-y-2">
@@ -125,6 +141,8 @@ export default function AuditRequest() {
                     placeholder="john@company.com" 
                     required 
                     className="bg-background/50 border-white/5" 
+                    value={formDataState.corporateEmail}
+                    onChange={(e) => setFormDataState({...formDataState, corporateEmail: e.target.value})}
                   />
                 </div>
               </div>

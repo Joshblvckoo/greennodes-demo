@@ -11,6 +11,7 @@ interface SessionMetrics {
 
 interface SessionContextType {
   companyName: string | null;
+  userEmail: string | null;
   metrics: SessionMetrics | null;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -22,6 +23,7 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [companyName, setCompanyName] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [metrics, setMetrics] = useState<SessionMetrics | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +42,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const initialSpend = Math.floor(Math.random() * (250000 - 50000) + 50000);
 
     setCompanyName(name);
+    setUserEmail(email);
     setMetrics({
       waste: initialWaste,
       carbon: initialCarbon,
@@ -58,6 +61,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     <SessionContext.Provider 
       value={{ 
         companyName, 
+        userEmail,
         metrics, 
         isAuthenticated, 
         isLoading, 

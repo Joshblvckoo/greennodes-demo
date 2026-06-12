@@ -5,6 +5,7 @@ import ExecutiveWorkspace from "@/components/dashboard/ExecutiveWorkspace";
 import TokenVault from "@/components/vault/TokenVault";
 import SlackSimulator from "@/components/chatops/SlackSimulator";
 import AuditRequest from "@/components/audit/AuditRequest";
+import GSFCertificationQuiz from "@/components/quiz/GSFCertificationQuiz";
 import LoginGate from "@/components/auth/LoginGate";
 import LoadingHandshake from "@/components/auth/LoadingHandshake";
 import { SessionProvider, useSession } from "@/context/SessionContext";
@@ -17,11 +18,12 @@ import {
   Menu, 
   X, 
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Award
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type View = "dashboard" | "vault" | "chatops" | "audit";
+type View = "dashboard" | "vault" | "chatops" | "audit" | "certification";
 
 function AppContent() {
   const { isAuthenticated, isLoading, companyName } = useSession();
@@ -40,6 +42,7 @@ function AppContent() {
     { id: "dashboard", name: "Executive Workspace", icon: LayoutDashboard },
     { id: "vault", name: "The GNC Token Vault", icon: Coins },
     { id: "chatops", name: "Slack ChatOps Simulator", icon: MessageSquare },
+    { id: "certification", name: "GSF Certification", icon: Award },
     { id: "audit", name: "Cloud Waste Audit", icon: ClipboardList },
   ];
 
@@ -120,7 +123,7 @@ function AppContent() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 min-w-0 h-screen overflow-y-auto bg-[#020617] relative">
+      <main className="flex-1 min-0 h-screen overflow-y-auto bg-[#020617] relative">
         {/* Background Gradients */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] -z-10" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -z-10" />
@@ -134,6 +137,7 @@ function AppContent() {
           {activeView === "dashboard" && <ExecutiveWorkspace />}
           {activeView === "vault" && <TokenVault />}
           {activeView === "chatops" && <SlackSimulator />}
+          {activeView === "certification" && <GSFCertificationQuiz onAuditClick={() => setActiveView("audit")} />}
           {activeView === "audit" && <AuditRequest />}
         </div>
       </main>
