@@ -32,17 +32,17 @@ export interface TimeframeConfig {
 
 export const trackMetadata: Record<string, { title: string; badgeText: string; badgeColor: string }> = {
   whaleTracker: {
-    title: " WhaleTracker — Orbital Satellite Telemetry Plane",
+    title: "WhaleTracker — Orbital Satellite Telemetry Plane",
     badgeText: "ORBITAL GREENOPS PREVIEW",
     badgeColor: "border-blue-900 bg-blue-950 text-blue-300",
   },
   jollofPay: {
-    title: " Jollof Pay — Fintech Remittance Engine Grid",
+    title: "Jollof Pay — Fintech Remittance Engine Grid",
     badgeText: "FINOPS TRANSACTION PREVIEW",
     badgeColor: "border-amber-900 bg-amber-950 text-amber-300",
   },
   odysseyDestinations: {
-    title: " Odyssey Destinations — AI Itinerary Engine RAG Plane",
+    title: "Odyssey Destinations — AI Itinerary Engine RAG Plane",
     badgeText: "AI CORE RUNTIME PREVIEW",
     badgeColor: "border-purple-900 bg-purple-950 text-purple-300",
   }
@@ -60,8 +60,8 @@ export const detailedMatrix: Record<string, Record<'7D' | '14D' | 'ALL', Detaile
       hasSpike: true, spikeIndex: 7,
       hasGnActive: true, gnActiveIndex: 12,
       insights: [
-        "Insight: High carbon intensity peaks correlate directly with your regional usage of the AWS us-east-1 grid between 2 PM and 6 PM. Consider shifting heavy batch workloads to overnight cycles.",
-        "Insight: Automated weekend downscaling would preserve an estimated 45,000 GNC tokens per month in your Vault based on your current weekly run-rate."
+        "Insight: High carbon intensity peaks correlate directly with your regional usage of the AWS us-east-1 grid between 2 PM and 6 PM.",
+        "Insight: Automated weekend downscaling would preserve an estimated 45,000 GNC tokens per month in your Vault."
       ],
       points: [
         { date: "Jun 07", spend: 32000, carbon: 900 }, { date: "Jun 08", spend: 48000, carbon: 1300 },
