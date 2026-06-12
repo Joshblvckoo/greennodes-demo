@@ -16,7 +16,6 @@ export interface DashboardMetricSet {
   efficiencyPercent: number;
   carbonIntensity: number;
   telemetryStream: { id: string; event: string; status: string }[];
-  // 📈 Add this new chart vector array
   graphData: GraphDataPoint[];
 }
 
