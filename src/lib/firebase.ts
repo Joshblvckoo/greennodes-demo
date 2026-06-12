@@ -18,7 +18,7 @@ if (typeof window !== 'undefined' && !firebaseConfig.apiKey) {
   console.error("❌ Critical: Firebase Key unresolved. Verify .env.local prefixes!");
 }
 
-// Handle Next.js Fast Refresh cycles safely
+// Next.js Turbopack fast-refresh safe initializer
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
