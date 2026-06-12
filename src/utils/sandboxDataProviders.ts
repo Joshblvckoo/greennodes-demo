@@ -1,63 +1,65 @@
-// src/utils/sandboxDataProviders.ts
-
 /**
  * @fileOverview Unified mock engine matrix for sandbox operational datasets.
  * Aggregates target metrics for specific industry use cases.
  */
 
-export interface SandboxMetrics {
+export interface DashboardMetricSet {
   title: string;
-  subtitle: string;
-  primaryMetricLabel: string;
-  primaryMetricValue: string;
-  wasteLabel: string;
-  wasteValue: string;
-  carbonLabel: string;
-  carbonValue: string;
-  anomalies: string[];
+  badge: string;
+  badgeColor: string;
+  leakRate: number;
+  efficiencyPercent: number;
+  carbonIntensity: number;
+  telemetryStream: { id: string; event: string; status: string }[];
 }
 
-export const sandboxUseCases: Record<string, SandboxMetrics> = {
+export const dataMatrix: Record<string, DashboardMetricSet> = {
+  general_metrics: {
+    title: "Global Enterprise Overview Workspace",
+    badge: "GENERAL TESTER PROFILE",
+    badgeColor: "border-emerald-900 bg-emerald-950 text-emerald-300",
+    leakRate: 4890,
+    efficiencyPercent: 78.4,
+    carbonIntensity: 45.2,
+    telemetryStream: [
+      { id: "SYS-01", event: "Standard Core Sync Completed", status: "OPTIMAL" },
+      { id: "SYS-02", event: "Global Database Node Refresh Loop", status: "OPTIMAL" }
+    ]
+  },
   whaleTracker: {
-    title: "🐋 WhaleTracker — Orbital Telemetry & Marine GreenOps",
-    subtitle: "Tracking deep-water migration corridors via satellite downlinks and spatial carbon awareness constraints.",
-    primaryMetricLabel: "Orbital Data Egress Rate",
-    primaryMetricValue: "14.2 PB / hr",
-    wasteLabel: "Over-Provisioned Ground Stations",
-    wasteValue: "$4,230 / mo",
-    carbonLabel: "Satellite Link Carbon Draw",
-    carbonValue: "1.4 gCO2e/packet",
-    anomalies: [
-      "Anomaly: Ground Station Alpha (Svalbard) processing idle carrier waves.",
-      "Optimization: Spatial shifting active. Route payload downlinks to clean grid zones."
+    title: " WhaleTracker — Orbital Satellite Telemetry Plane",
+    badge: "ORBITAL GREENOPS PREVIEW",
+    badgeColor: "border-blue-900 bg-blue-950 text-blue-300",
+    leakRate: 14230,
+    efficiencyPercent: 42.1,
+    carbonIntensity: 1.4,
+    telemetryStream: [
+      { id: "SAT-SVALBARD", event: "Ground Station Alpha Processing Idle Waves", status: "ANOMALY" },
+      { id: "SAT-AZORES", event: "Downlink Route Shifted to Clean Energy Grid", status: "OPTIMAL" }
     ]
   },
   jollofPay: {
-    title: "💳 Jollof Pay — Cross-Border FinTech Gateway",
-    subtitle: "Optimizing high-frequency remittance settlement channels (GBP to NGN) across global availability zones.",
-    primaryMetricLabel: "API Transaction Throughput",
-    primaryMetricValue: "8,450 tx / sec",
-    wasteLabel: "Database Read/Write Idle Bleed",
-    wasteValue: "$12,890 / mo",
-    carbonLabel: "Ledger Sync Energy Intensity",
-    carbonValue: "34.1 gCO2e/settlement",
-    anomalies: [
-      "Anomaly: Secondary validation database clusters running at 98% idle variance.",
-      "Optimization: Downscaling webhook ready. Automated compute compression queued."
+    title: " Jollof Pay — Fintech Remittance Engine Grid",
+    badge: "FINOPS TRANSACTION PREVIEW",
+    badgeColor: "border-amber-900 bg-amber-950 text-amber-300",
+    leakRate: 28400,
+    efficiencyPercent: 89.7,
+    carbonIntensity: 34.1,
+    telemetryStream: [
+      { id: "DB-LAGOS-01", event: "Secondary Validation Cluster Idle Bleed Detected", status: "CRITICAL" },
+      { id: "DB-LONDON-02", event: "Automated Compute Compression Hooks Armed", status: "OPTIMAL" }
     ]
   },
   odysseyDestinations: {
-    title: "✈️ Odyssey Destinations — AI Travel Assistance Engine",
-    subtitle: "Physics-informed routing matrices and RAG pipelines calculating dynamic multi-modal travel itineraries.",
-    primaryMetricLabel: "LLM Token Context Ingestion",
-    primaryMetricValue: "4.2B tokens / min",
-    wasteLabel: "Unused GPU Core Cluster Leak",
-    wasteValue: "$18,400 / mo",
-    carbonLabel: "Neural Net Inference Footprint",
-    carbonValue: "124.8 gCO2e/query",
-    anomalies: [
-      "Anomaly: HNN trajectory cluster drawing full idle capacity during off-peak hours.",
-      "Optimization: Dynamic cluster suspension recommended via ChatOps pipeline."
+    title: " Odyssey Destinations — AI Itinerary Engine RAG Plane",
+    badge: "AI CORE RUNTIME PREVIEW",
+    badgeColor: "border-purple-900 bg-purple-950 text-purple-300",
+    leakRate: 64100,
+    efficiencyPercent: 31.5,
+    carbonIntensity: 124.8,
+    telemetryStream: [
+      { id: "GPU-NODE-ALPHA", event: "HNN Trajectory Array Drawing Idle Capacity", status: "ANOMALY" },
+      { id: "RAG-VECTOR-01", event: "Context Ingestion Buffer Compressing Dynamically", status: "OPTIMAL" }
     ]
   }
 };
