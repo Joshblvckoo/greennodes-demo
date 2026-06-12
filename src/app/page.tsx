@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import ExecutiveWorkspace from "@/components/dashboard/ExecutiveWorkspace";
+import MainView from "@/components/dashboard/MainView";
 import TokenVault from "@/components/vault/TokenVault";
 import SlackSimulator from "@/components/chatops/SlackSimulator";
 import AuditRequest from "@/components/audit/AuditRequest";
@@ -152,7 +153,7 @@ function AppContent() {
             </Button>
           </header>
 
-          {activeView === "dashboard" && <ExecutiveWorkspace />}
+          {activeView === "dashboard" && <MainView />}
           {activeView === "vault" && <TokenVault />}
           {activeView === "chatops" && <SlackSimulator />}
           {activeView === "certification" && <GnrCertification onAuditClick={() => setActiveView("audit")} />}

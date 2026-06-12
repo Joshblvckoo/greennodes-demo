@@ -27,7 +27,7 @@ export const dataMatrix: Record<string, DashboardMetricSet> = {
     ]
   },
   whaleTracker: {
-    title: " WhaleTracker — Orbital Satellite Telemetry Plane",
+    title: "🐋 WhaleTracker — Orbital Satellite Telemetry Plane",
     badge: "ORBITAL GREENOPS PREVIEW",
     badgeColor: "border-blue-900 bg-blue-950 text-blue-300",
     leakRate: 14230,
@@ -39,7 +39,7 @@ export const dataMatrix: Record<string, DashboardMetricSet> = {
     ]
   },
   jollofPay: {
-    title: " Jollof Pay — Fintech Remittance Engine Grid",
+    title: "💳 Jollof Pay — Fintech Remittance Engine Grid",
     badge: "FINOPS TRANSACTION PREVIEW",
     badgeColor: "border-amber-900 bg-amber-950 text-amber-300",
     leakRate: 28400,
@@ -51,7 +51,7 @@ export const dataMatrix: Record<string, DashboardMetricSet> = {
     ]
   },
   odysseyDestinations: {
-    title: " Odyssey Destinations — AI Itinerary Engine RAG Plane",
+    title: "✈️ Odyssey Destinations — AI Itinerary Engine RAG Plane",
     badge: "AI CORE RUNTIME PREVIEW",
     badgeColor: "border-purple-900 bg-purple-950 text-purple-300",
     leakRate: 64100,
