@@ -1,6 +1,7 @@
+
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,15 +23,20 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { generateAuditBlueprint } from "@/ai/flows/generate-audit-blueprint";
-import { Loader2, Send, Sparkles, LayoutDashboard, CheckCircle } from "lucide-react";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { Loader2, Send, Sparkles, LayoutDashboard, CheckCircle, Terminal as TerminalIcon } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 export default function AuditRequest() {
   const { userEmail, companyName } = useSession();
   const [loading, setLoading] = useState(false);
   const [blueprint, setBlueprint] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [scanLogs, setScanLogs] = useState<string[]>([]);
+  const [progress, setProgress] = useState(0);
+  const terminalRef = useRef<HTMLDivElement>(null);
   
-  // State for form fields to enable pre-filling
   const [formDataState, setFormDataState] = useState({
     fullName: "",
     corporateEmail: userEmail || "",
@@ -42,24 +48,65 @@ export default function AuditRequest() {
     }
   }, [userEmail]);
 
+  useEffect(() => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
+  }, [scanLogs]);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setScanLogs([]);
+    setProgress(0);
     
     const formData = new FormData(e.currentTarget);
-    const data = {
-      fullName: formData.get("fullName") as string,
-      corporateEmail: formData.get("corporateEmail") as string,
-      estimatedMonthlyCloudSpend: formData.get("spend") as string,
-      primaryCloudProvider: formData.get("provider") as string,
-    };
+    const email = formData.get("corporateEmail") as string;
+    const provider = formData.get("provider") as string;
+    const spend = formData.get("spend") as string;
+    const fullName = formData.get("fullName") as string;
+    const domain = email.split('@')[1] || "Global Sandbox Alpha";
+
+    // Terminal Simulation Steps
+    const steps = [
+      `[INIT] Handshaking securely with regional data nodes via Firebase network edge...`,
+      `[AUTH] Mapping structural environment profiles for enterprise target: ${domain}`,
+      `[SCANNING] Crawling configuration components within ${provider} cluster registries...`,
+      `[ANALYSIS] Flagged zombie resources and under-allocated persistent volume storage blocks.`,
+      `[CALCULATOR] Computing GSF SCI Matrix metric: S = (E * I) + M...`,
+      `[LEDGER] Uploading atomic audit transaction documents safely into Cloud Firestore...`
+    ];
+
+    // Run simulation loop
+    for (let i = 0; i < steps.length; i++) {
+      setScanLogs(prev => [...prev, steps[i]]);
+      setProgress(((i + 1) / steps.length) * 100);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
 
     try {
-      const result = await generateAuditBlueprint(data);
+      // 1. Save Lead to Firestore
+      await addDoc(collection(db, "audit_leads"), {
+        fullName,
+        email,
+        companyDomain: domain,
+        cloudProvider: provider,
+        estimatedMonthlySpend: spend,
+        timestamp: serverTimestamp()
+      });
+
+      // 2. Generate AI Blueprint
+      const result = await generateAuditBlueprint({
+        fullName,
+        corporateEmail: email,
+        estimatedMonthlyCloudSpend: spend,
+        primaryCloudProvider: provider,
+      });
+      
       setBlueprint(result.blueprint);
       setShowModal(true);
     } catch (error) {
-      console.error("Failed to generate blueprint", error);
+      console.error("Audit processing failed", error);
     } finally {
       setLoading(false);
     }
@@ -118,88 +165,103 @@ export default function AuditRequest() {
           </div>
 
           <CardContent className="md:col-span-3 p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input 
-                    id="fullName" 
-                    name="fullName" 
-                    placeholder="John Doe" 
-                    required 
-                    className="bg-background/50 border-white/5"
-                    value={formDataState.fullName}
-                    onChange={(e) => setFormDataState({...formDataState, fullName: e.target.value})}
-                  />
+            {loading ? (
+              <div className="space-y-6 py-4 animate-in fade-in">
+                <div className="flex items-center justify-between text-xs font-bold uppercase tracking-widest text-primary">
+                  <span className="flex items-center gap-2">
+                    <TerminalIcon size={14} />
+                    Processing Environment...
+                  </span>
+                  <span>{Math.round(progress)}%</span>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="corporateEmail">Corporate Email</Label>
-                  <Input 
-                    id="corporateEmail" 
-                    name="corporateEmail" 
-                    type="email" 
-                    placeholder="john@company.com" 
-                    required 
-                    className="bg-background/50 border-white/5" 
-                    value={formDataState.corporateEmail}
-                    onChange={(e) => setFormDataState({...formDataState, corporateEmail: e.target.value})}
-                  />
+                <Progress value={progress} className="h-1.5 bg-white/5" />
+                <div 
+                  ref={terminalRef}
+                  className="bg-black/60 border border-white/10 rounded-xl p-4 h-64 overflow-y-auto font-mono text-[11px] space-y-1.5 scroll-smooth"
+                >
+                  {scanLogs.map((log, i) => (
+                    <div key={i} className="text-emerald-400">
+                      {log}
+                    </div>
+                  ))}
+                  <div className="animate-pulse inline-block w-1.5 h-3 bg-primary align-middle ml-1" />
                 </div>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="spend">Monthly Cloud Spend</Label>
-                  <Select name="spend" required>
-                    <SelectTrigger className="bg-background/50 border-white/5">
-                      <SelectValue placeholder="Select range" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Less than $1k">Less than $1k</SelectItem>
-                      <SelectItem value="$1k-$10k">$1k-$10k</SelectItem>
-                      <SelectItem value="$10k-$50k">$10k-$50k</SelectItem>
-                      <SelectItem value="$50k-$100k">$50k-$100k</SelectItem>
-                      <SelectItem value="More than $100k">More than $100k</SelectItem>
-                    </SelectContent>
-                  </Select>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input 
+                      id="fullName" 
+                      name="fullName" 
+                      placeholder="John Doe" 
+                      required 
+                      className="bg-background/50 border-white/5"
+                      value={formDataState.fullName}
+                      onChange={(e) => setFormDataState({...formDataState, fullName: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="corporateEmail">Corporate Email</Label>
+                    <Input 
+                      id="corporateEmail" 
+                      name="corporateEmail" 
+                      type="email" 
+                      placeholder="john@company.com" 
+                      required 
+                      className="bg-background/50 border-white/5" 
+                      value={formDataState.corporateEmail}
+                      onChange={(e) => setFormDataState({...formDataState, corporateEmail: e.target.value})}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="provider">Primary Provider</Label>
-                  <Select name="provider" required>
-                    <SelectTrigger className="bg-background/50 border-white/5">
-                      <SelectValue placeholder="Select cloud" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="AWS">AWS</SelectItem>
-                      <SelectItem value="GCP">GCP</SelectItem>
-                      <SelectItem value="Azure">Azure</SelectItem>
-                      <SelectItem value="Multi-Cloud">Multi-Cloud</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
 
-              <Button 
-                type="submit" 
-                disabled={loading}
-                className="w-full h-12 bg-primary text-primary-foreground font-black uppercase tracking-widest glow-primary hover:bg-primary/90 transition-all"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating Audit...
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Claim Free Audit
-                  </>
-                )}
-              </Button>
-              <p className="text-[10px] text-center text-muted-foreground uppercase tracking-tighter">
-                No credit card required. Audit delivery via secure corporate email only.
-              </p>
-            </form>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="spend">Monthly Cloud Spend</Label>
+                    <Select name="spend" required>
+                      <SelectTrigger className="bg-background/50 border-white/5">
+                        <SelectValue placeholder="Select range" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Less than $1k">Less than $1k</SelectItem>
+                        <SelectItem value="$1k-$10k">$1k-$10k</SelectItem>
+                        <SelectItem value="$10k-$50k">$10k-$50k</SelectItem>
+                        <SelectItem value="$50k-$100k">$50k-$100k</SelectItem>
+                        <SelectItem value="More than $100k">More than $100k</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="provider">Primary Provider</Label>
+                    <Select name="provider" required>
+                      <SelectTrigger className="bg-background/50 border-white/5">
+                        <SelectValue placeholder="Select cloud" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="AWS">AWS</SelectItem>
+                        <SelectItem value="GCP">GCP</SelectItem>
+                        <SelectItem value="Azure">Azure</SelectItem>
+                        <SelectItem value="Multi-Cloud">Multi-Cloud</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  disabled={loading}
+                  className="w-full h-12 bg-primary text-primary-foreground font-black uppercase tracking-widest glow-primary hover:bg-primary/90 transition-all"
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  Claim Free Audit
+                </Button>
+                <p className="text-[10px] text-center text-muted-foreground uppercase tracking-tighter">
+                  🔒 Privacy Note: Used only to calculate your sandboxed environment data variables.
+                </p>
+              </form>
+            )}
           </CardContent>
         </div>
       </Card>
@@ -214,7 +276,7 @@ export default function AuditRequest() {
               <DialogTitle className="text-2xl font-black uppercase tracking-tight">Audit Request Received!</DialogTitle>
             </div>
             <DialogDescription className="text-muted-foreground">
-              A GreenNodes Solutions Architect will deliver your full ServiceNow Executive Dashboard blueprint within 24 hours. Here is your initial AI-generated summary.
+              A GreenNodes Solutions Architect will deliver your full ServiceNow Executive Dashboard blueprint within 24 hours.
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto p-6 pt-4 space-y-4">
