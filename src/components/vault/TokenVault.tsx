@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
+import { useSession } from "@/context/SessionContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Coins, TrendingUp, ShieldCheck, Wallet, ArrowUpRight } from "lucide-react";
 
 export default function TokenVault() {
-  const [balance, setBalance] = useState(315000);
+  const { metrics: initialMetrics, companyName } = useSession();
+  const [balance, setBalance] = useState(initialMetrics?.tokens || 315000);
   const rolloverRate = 0.05; // 5%
 
   const projectedBalance = Math.floor(balance * (1 + rolloverRate));
@@ -17,7 +19,7 @@ export default function TokenVault() {
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold font-headline tracking-tight">The GNC Token Vault</h1>
-        <p className="text-muted-foreground">Manage your GreenNodes equity ledger and track passive rollover yields.</p>
+        <p className="text-muted-foreground">Manage {companyName}&apos;s equity ledger and track passive rollover yields.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -47,11 +49,11 @@ export default function TokenVault() {
             <div className="p-4 rounded-xl bg-background/50 border border-white/5 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Base Allocation</span>
-                <span className="font-mono">250,000 GNC</span>
+                <span className="font-mono">{Math.floor(balance * 0.8).toLocaleString()} GNC</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Accrued Yield</span>
-                <span className="font-mono text-primary">+65,000 GNC</span>
+                <span className="font-mono text-primary">+{Math.floor(balance * 0.2).toLocaleString()} GNC</span>
               </div>
               <div className="h-px bg-white/5" />
               <div className="flex justify-between text-sm font-bold">
@@ -72,7 +74,7 @@ export default function TokenVault() {
               <Wallet className="h-5 w-5 text-primary" />
               Yield Simulator Calculator
             </CardTitle>
-            <CardDescription>Estimate your next month's opening balance with the 5% Compound formula.</CardDescription>
+            <CardDescription>Estimate next month&apos;s opening balance with the 5% Compound formula for {companyName}.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-12 py-8">
             <div className="space-y-6">

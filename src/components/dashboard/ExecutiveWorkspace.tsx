@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useSession } from "@/context/SessionContext";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   LineChart, Line, Cell, PieChart, Pie, Legend
@@ -36,22 +37,23 @@ const LINE_DATA = [
 
 export default function ExecutiveWorkspace() {
   const { toast } = useToast();
+  const { metrics: initialMetrics, companyName } = useSession();
   const [isScanning, setIsScanning] = useState(false);
   const [metrics, setMetrics] = useState({
-    spend: 142580,
-    waste: 12450,
-    tokens: 315000,
-    carbon: 842
+    spend: initialMetrics?.spend || 142580,
+    waste: initialMetrics?.waste || 12450,
+    tokens: initialMetrics?.tokens || 315000,
+    carbon: initialMetrics?.carbon || 842
   });
 
   useEffect(() => {
     const interval = setInterval(() => {
       setMetrics(prev => ({
         ...prev,
-        spend: prev.spend + (Math.random() * 10),
-        tokens: prev.tokens + (Math.random() * 5),
+        spend: prev.spend + (Math.random() * 5),
+        tokens: prev.tokens + (Math.random() * 2),
       }));
-    }, 3000);
+    }, 4000);
     return () => clearInterval(interval);
   }, []);
 
@@ -61,7 +63,7 @@ export default function ExecutiveWorkspace() {
       setIsScanning(false);
       toast({
         title: "Scan Complete",
-        description: "Visual Studio Engine synchronized with ServiceNow State Ledger.",
+        description: `Visual Studio Engine synchronized with ${companyName} ServiceNow State Ledger.`,
       });
     }, 3000);
   };
@@ -71,7 +73,7 @@ export default function ExecutiveWorkspace() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold font-headline tracking-tight">Executive Workspace</h1>
-          <p className="text-muted-foreground mt-1">Real-time infrastructure intelligence and GreenOps overview.</p>
+          <p className="text-muted-foreground mt-1">Real-time infrastructure intelligence for {companyName}.</p>
         </div>
         <Button 
           onClick={handleScan} 

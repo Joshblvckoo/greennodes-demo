@@ -5,6 +5,9 @@ import ExecutiveWorkspace from "@/components/dashboard/ExecutiveWorkspace";
 import TokenVault from "@/components/vault/TokenVault";
 import SlackSimulator from "@/components/chatops/SlackSimulator";
 import AuditRequest from "@/components/audit/AuditRequest";
+import LoginGate from "@/components/auth/LoginGate";
+import LoadingHandshake from "@/components/auth/LoadingHandshake";
+import { SessionProvider, useSession } from "@/context/SessionContext";
 import { Toaster } from "@/components/ui/toaster";
 import { 
   LayoutDashboard, 
@@ -20,9 +23,18 @@ import { cn } from "@/lib/utils";
 
 type View = "dashboard" | "vault" | "chatops" | "audit";
 
-export default function Home() {
+function AppContent() {
+  const { isAuthenticated, isLoading, companyName } = useSession();
   const [activeView, setActiveView] = useState<View>("dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  if (!isAuthenticated && !isLoading) {
+    return <LoginGate />;
+  }
+
+  if (isLoading) {
+    return <LoadingHandshake />;
+  }
 
   const navigation = [
     { id: "dashboard", name: "Executive Workspace", icon: LayoutDashboard },
@@ -32,7 +44,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex text-foreground">
+    <div className="min-h-screen bg-background flex text-foreground animate-in fade-in duration-1000">
       {/* Sidebar Mobile Toggle */}
       <button 
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -114,6 +126,11 @@ export default function Home() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] -z-10" />
 
         <div className="max-w-7xl mx-auto p-6 lg:p-12 pb-24">
+          <header className="mb-8 animate-in slide-in-from-top duration-700">
+            <h2 className="text-sm font-bold text-primary uppercase tracking-[0.2em] mb-2">{companyName} Control Center</h2>
+            <div className="h-px w-full bg-gradient-to-r from-primary/50 to-transparent" />
+          </header>
+
           {activeView === "dashboard" && <ExecutiveWorkspace />}
           {activeView === "vault" && <TokenVault />}
           {activeView === "chatops" && <SlackSimulator />}
@@ -123,5 +140,13 @@ export default function Home() {
 
       <Toaster />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <SessionProvider>
+      <AppContent />
+    </SessionProvider>
   );
 }
