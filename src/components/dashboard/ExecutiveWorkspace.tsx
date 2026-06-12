@@ -13,15 +13,22 @@ export default function ExecutiveWorkspace() {
   useEffect(() => {
     // 🛡️ Guard 1: Prevent Web3 provider loops from choking execution frames
     if (typeof window !== 'undefined') {
-      (window as any).ethereum = undefined;
+      (window as any).ethereum = undefined; // Disables loose, aggressive inpage extensions from hijacking trace listeners
     }
 
     // 🛡️ Guard 2: Create a controller to terminate loose active listeners when component re-renders
+    const controller = new AbortController();
     let isMounted = true;
 
     async function initializeSystemGateways() {
       try {
         if (!isMounted) return;
+
+        // Validation for Firebase API Key - Fallback to mock if unresolved
+        const key = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+        if (!key || key.startsWith("AIzaSyBUj")) {
+          console.warn("⚠️ Utilizing default mock layout fallback. Live stream sync bypassed.");
+        }
 
         const activeTrack = localStorage.getItem('sandbox_tenant_focus') || 'whaleTracker';
         setTrackKey(activeTrack);
@@ -42,6 +49,7 @@ export default function ExecutiveWorkspace() {
     // 🧼 The Emergency Clean Interceptor: Cuts off the infinite EventEmitter loop completely
     return () => {
       isMounted = false;
+      controller.abort();
       console.log("🧼 Stream hooks unmounted cleanly. Event loops terminated.");
     };
   }, [timeframe]);
@@ -199,55 +207,25 @@ export default function ExecutiveWorkspace() {
               <svg className="w-full h-full overflow-visible" viewBox="0 0 500 150" preserveAspectRatio="none">
                 
                 {/* Horizontal Background Grid Reference Lines */}
-                {[10, 42.5, 75, 107.5, 140].map((y, i) => (
-                  <line key={i} x1="0" y1={y} x2="500" y2={y} stroke="#0e1420" strokeWidth="1" strokeDasharray={i === 4 ? "0" : "3"} />
-                ))}
+                <line x1="0" y1="10" x2="500" y2="10" stroke="#0e1420" strokeWidth="1" strokeDasharray="3" />
+                <line x1="0" y1="42.5" x2="500" y2="42.5" stroke="#0e1420" strokeWidth="1" strokeDasharray="3" />
+                <line x1="0" y1="75" x2="500" y2="75" stroke="#0e1420" strokeWidth="1" strokeDasharray="3" />
+                <line x1="0" y1="107.5" x2="500" y2="107.5" stroke="#0e1420" strokeWidth="1" strokeDasharray="3" />
+                <line x1="0" y1="140" x2="500" y2="140" stroke="#1c2536" strokeWidth="1" />
 
                 {/* Vertical Marker Line: Red Anomaly Spike */}
                 {data.hasSpike && data.spikeIndex !== -1 && (
                   <>
-                    <line
-                      x1={(data.spikeIndex / (totalCount - 1)) * 500}
-                      y1="0"
-                      x2={(data.spikeIndex / (totalCount - 1)) * 500}
-                      y2="130"
-                      stroke="#ef4444"
-                      strokeWidth="1"
-                      strokeDasharray="2"
-                    />
-                    <text
-                      x={(data.spikeIndex / (totalCount - 1)) * 500}
-                      y="5"
-                      fill="#ef4444"
-                      className="text-[9px] font-mono font-bold"
-                      textAnchor="middle"
-                    >
-                      Spike
-                    </text>
+                    <line x1={(data.spikeIndex / (totalCount - 1)) * 500} y1="10" x2={(data.spikeIndex / (totalCount - 1)) * 500} y2="140" stroke="#ef4444" strokeWidth="1.2" />
+                    <text x={(data.spikeIndex / (totalCount - 1)) * 500} y="5" fill="#ef4444" className="text-[9px] font-mono font-bold" textAnchor="middle">Spike</text>
                   </>
                 )}
 
                 {/* Vertical Marker Line: GreenNodes Active Module Flag */}
                 {data.hasGnActive && data.gnActiveIndex !== -1 && (
                   <>
-                    <line
-                      x1={(data.gnActiveIndex / (totalCount - 1)) * 500}
-                      y1="0"
-                      x2={(data.gnActiveIndex / (totalCount - 1)) * 500}
-                      y2="130"
-                      stroke="#10b981"
-                      strokeWidth="1"
-                      strokeDasharray="3"
-                    />
-                    <text
-                      x={(data.gnActiveIndex / (totalCount - 1)) * 500}
-                      y="5"
-                      fill="#10b981"
-                      className="text-[9px] font-mono font-bold"
-                      textAnchor="middle"
-                    >
-                      GN Active
-                    </text>
+                    <line x1={(data.gnActiveIndex / (totalCount - 1)) * 500} y1="10" x2={(data.gnActiveIndex / (totalCount - 1)) * 500} y2="140" stroke="#10b981" strokeWidth="1.2" strokeDasharray="3" />
+                    <text x={(data.gnActiveIndex / (totalCount - 1)) * 500} y="5" fill="#10b981" className="text-[9px] font-mono font-bold" textAnchor="middle">GN Active</text>
                   </>
                 )}
 
@@ -273,7 +251,7 @@ export default function ExecutiveWorkspace() {
                 })}
 
                 {/* Hidden Hover Multiplier Rect Blocks for clean interactivity */}
-                {data.points.map((_, idx) => {
+                {data.points.map((p, idx) => {
                   const xPos = (idx / (totalCount - 1)) * 500;
                   return (
                     <rect
