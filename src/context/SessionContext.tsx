@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
@@ -35,6 +34,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   useEffect(() => {
+    if (!auth) {
+      setIsInitialLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         const storedEmail = localStorage.getItem('testerEmail') || user.email || "anonymous@tester.internal";
@@ -48,7 +52,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         }
         setCompanyName(name);
 
-        // Generate consistent metrics for the session
         setMetrics({
           waste: Math.floor(Math.random() * (15500 - 1200) + 1200),
           carbon: Math.floor(Math.random() * (2100 - 340) + 340),
@@ -69,46 +72,33 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (email?: string, password?: string) => {
+    if (!auth) {
+      throw new Error("Authentication gateway is currently unavailable.");
+    }
     setIsLoading(true);
     try {
       if (email && password) {
-        // Path A: Authenticated Enterprise Access
         localStorage.setItem('testerEmail', email);
-        const credential = await signInWithEmailAndPassword(auth, email, password);
-        console.log("Enterprise Session Established:", credential.user.uid);
+        await signInWithEmailAndPassword(auth, email, password);
       } else {
-        // Path B: Anonymous Guest Access (Sandbox environment)
-        if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
-          throw new Error("Client Handshake Blocked: Missing Environment Variables.");
-        }
         if (email) {
           localStorage.setItem('testerEmail', email);
         } else {
           localStorage.setItem('testerEmail', "anonymous@tester.internal");
         }
-        const anonymousUser = await signInAnonymously(auth);
-        console.log("Sandbox Access Granted. Session ID:", anonymousUser.user.uid);
+        await signInAnonymously(auth);
       }
     } catch (error: any) {
-      console.warn("Auth Handshake Attempt Logged:", error.code);
       setIsLoading(false);
-
-      // Map Firebase error codes to user-friendly messages
       if (error.code === 'auth/invalid-credential') {
         throw new Error("Invalid email address or access token password configuration.");
       }
-      if (error.code === 'auth/invalid-email') {
-        throw new Error("The format of the email address provided is invalid.");
-      }
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        throw new Error("Authentication failed. Please check your corporate credentials.");
-      }
-      
-      throw new Error(error.message || "Enterprise gateway connection interrupted. Try again later.");
+      throw new Error(error.message || "Enterprise gateway connection interrupted.");
     }
   };
 
   const logout = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
     } catch (error) {

@@ -1,4 +1,3 @@
-
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
@@ -13,12 +12,23 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// 🛡️ Guard step: Only initialize if we have an API key or if we are running in the browser
+const hasApiKey = typeof firebaseConfig.apiKey === 'string' && firebaseConfig.apiKey.length > 0;
+const isClient = typeof window !== 'undefined';
+
 // Clean diagnostic log to instantly notify you in the browser console if strings drop out
-if (typeof window !== 'undefined' && !firebaseConfig.apiKey) {
+if (isClient && !hasApiKey) {
   console.error("❌ Critical: Firebase Key unresolved. Verify .env.local prefixes!");
 }
 
-// Next.js Turbopack fast-refresh safe initializer
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// Prevent initializing during server-side static prerendering if keys aren't injected yet
+const app = (getApps().length === 0 && (hasApiKey || isClient))
+  ? initializeApp(firebaseConfig)
+  : getApps().length > 0 
+    ? getApp() 
+    : null;
+
+// Export guarded instances
+export const auth = app && hasApiKey ? getAuth(app) : null;
+export const db = app && hasApiKey ? getFirestore(app) : null;
+export default app;

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -27,9 +26,11 @@ import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { Loader2, Send, Sparkles, LayoutDashboard, CheckCircle, Terminal as TerminalIcon } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AuditRequest() {
   const { userEmail, companyName } = useSession();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [blueprint, setBlueprint] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -56,6 +57,15 @@ export default function AuditRequest() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!db) {
+      toast({
+        title: "Connection Error",
+        description: "Cloud database is not initialized. Please check your connection.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     setScanLogs([]);
     setProgress(0);
@@ -67,7 +77,6 @@ export default function AuditRequest() {
     const fullName = formData.get("fullName") as string;
     const domain = email.split('@')[1] || "Global Sandbox Alpha";
 
-    // 12-Second Progress Log Stepper Engine (2s per step)
     const steps = [
       `[INIT] Validating active Firebase core user session authorization...`,
       `[CONNECT] Mapping subnets belonging to: ${domain}`,
@@ -80,7 +89,7 @@ export default function AuditRequest() {
     for (let i = 0; i < steps.length; i++) {
       setScanLogs(prev => [...prev, steps[i]]);
       setProgress(((i + 1) / steps.length) * 100);
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
     }
 
     try {
@@ -106,6 +115,11 @@ export default function AuditRequest() {
       setShowModal(true);
     } catch (error) {
       console.error("Audit processing failed", error);
+      toast({
+        title: "Audit Failed",
+        description: "We encountered an error while processing your audit request.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
