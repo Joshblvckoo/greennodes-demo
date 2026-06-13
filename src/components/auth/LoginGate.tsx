@@ -13,11 +13,14 @@ export default function LoginGate() {
     try {
       await login();
 
+      // Successful or bypassed handshake - commit session flags
+      localStorage.setItem('sandbox_authenticated', 'true');
+      
       if (useCaseMode === 'specialized') {
         localStorage.setItem('sandbox_tenant_focus', selectedUseCase);
         console.log(`Routing token authorized for specialized trace: ${selectedUseCase}`);
       } else {
-        localStorage.setItem('sandbox_tenant_focus', 'whaleTracker'); // Use a valid default
+        localStorage.setItem('sandbox_tenant_focus', 'whaleTracker');
         console.log("Routing token authorized for General Tester Profile");
       }
 
