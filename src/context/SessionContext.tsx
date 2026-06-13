@@ -33,37 +33,59 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
+  // Helper to derive organization name from email domain
+  const getOrgName = (email: string) => {
+    if (!email || !email.includes("@")) return "Global Sandbox Alpha";
+    const domain = email.split("@")[1];
+    const part = domain.split(".")[0];
+    return part.charAt(0).toUpperCase() + part.slice(1);
+  };
+
   useEffect(() => {
+    // 🛡️ INITIAL MOUNT: Check for existing bypass session
+    const isBypassAuth = typeof window !== 'undefined' && localStorage.getItem('sandbox_authenticated') === 'true';
+    if (isBypassAuth) {
+      const storedEmail = localStorage.getItem('testerEmail') || "anonymous@tester.internal";
+      setUserEmail(storedEmail);
+      setCompanyName(getOrgName(storedEmail));
+      setIsAuthenticated(true);
+      
+      setMetrics({
+        waste: 12400,
+        carbon: 840,
+        tokens: 315000,
+        spend: 75000,
+      });
+    }
+
     if (!auth) {
       setIsInitialLoading(false);
       return;
     }
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const storedEmail = localStorage.getItem('testerEmail') || user.email || "anonymous@tester.internal";
-        setUserEmail(storedEmail);
-        
-        let name = "Global Sandbox Alpha";
-        if (storedEmail && storedEmail.includes("@")) {
-          const domain = storedEmail.split("@")[1];
-          const part = domain.split(".")[0];
-          name = part.charAt(0).toUpperCase() + part.slice(1);
-        }
-        setCompanyName(name);
+      // Re-verify bypass flag on every auth change
+      const stillBypassed = localStorage.getItem('sandbox_authenticated') === 'true';
+      
+      if (user || stillBypassed) {
+        setIsAuthenticated(true);
+        const activeEmail = user?.email || localStorage.getItem('testerEmail') || "anonymous@tester.internal";
+        setUserEmail(activeEmail);
+        setCompanyName(getOrgName(activeEmail));
 
-        setMetrics({
-          waste: Math.floor(Math.random() * (15500 - 1200) + 1200),
-          carbon: Math.floor(Math.random() * (2100 - 340) + 340),
-          tokens: Math.floor(Math.random() * (340000 - 85000) + 85000),
-          spend: Math.floor(Math.random() * (250000 - 50000) + 50000),
-        });
+        if (!metrics) {
+          setMetrics({
+            waste: Math.floor(Math.random() * (15500 - 1200) + 1200),
+            carbon: Math.floor(Math.random() * (2100 - 340) + 340),
+            tokens: Math.floor(Math.random() * (340000 - 85000) + 85000),
+            spend: Math.floor(Math.random() * (250000 - 50000) + 50000),
+          });
+        }
       } else {
         setIsAuthenticated(false);
         setCompanyName(null);
         setUserEmail(null);
         setMetrics(null);
-        localStorage.removeItem('testerEmail');
       }
       setIsInitialLoading(false);
     });
@@ -77,16 +99,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       !process.env.NEXT_PUBLIC_FIREBASE_API_KEY || 
       process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'undefined';
 
+    setIsLoading(true);
+
     if (isFirebaseMissing) {
-      console.warn("⚠️ Production API keys missing in build bundle. Initiating GreenNodes Sandbox bypass protocol...");
+      console.warn("⚠️ Production API keys missing. Engaging Sandbox bypass...");
       const guestEmail = email || "guest@sandbox.internal";
+      localStorage.setItem('testerEmail', guestEmail);
+      localStorage.setItem('sandbox_authenticated', 'true');
       setUserEmail(guestEmail);
-      setCompanyName("Guest Sandbox Alpha");
-      setIsLoading(true);
+      setCompanyName(getOrgName(guestEmail));
       return;
     }
 
-    setIsLoading(true);
     try {
       if (email && password) {
         localStorage.setItem('testerEmail', email);
@@ -96,33 +120,40 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('testerEmail', anonymousEmail);
         await signInAnonymously(auth);
       }
+      localStorage.setItem('sandbox_authenticated', 'true');
     } catch (error: any) {
-      console.error("Authentication submission error:", error);
+      console.error("Auth error:", error);
       
-      // Emergency catch-all bypass: If the live API rejects the keys at runtime, let the developer through anyway
       if (error.code === 'auth/invalid-api-key' || error.code === 'auth/internal-error' || error.message.includes('key')) {
-        console.warn("⚠️ Live API rejection intercepted. Engaging presentation fallback mode.");
-        setUserEmail(email || "presentation@sandbox.internal");
-        setCompanyName("Demo Organization");
-        return; // Proceed in loading state, finishLoading will set isAuthenticated
+        console.warn("⚠️ API Rejection. Engaging presentation fallback.");
+        localStorage.setItem('sandbox_authenticated', 'true');
+        const fallbackEmail = email || "presentation@sandbox.internal";
+        setUserEmail(fallbackEmail);
+        setCompanyName(getOrgName(fallbackEmail));
+        return; 
       }
 
       setIsLoading(false);
-      if (error.code === 'auth/invalid-credential') {
-        throw new Error("Invalid email address or access token password configuration.");
-      }
-      throw new Error(error.message || "Enterprise gateway connection interrupted.");
+      throw new Error(error.message || "Connection interrupted.");
     }
   };
 
   const logout = async () => {
     setIsAuthenticated(false);
-    if (!auth) return;
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Sign Out Operations Error:", error);
+    localStorage.removeItem('sandbox_authenticated');
+    localStorage.removeItem('testerEmail');
+    localStorage.removeItem('sandbox_tenant_focus');
+    
+    if (auth) {
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error("Sign out error:", error);
+      }
     }
+    
+    // Refresh to clear all sensitive telemetry states
+    window.location.href = '/';
   };
 
   const finishLoading = () => {
